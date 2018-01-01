@@ -54,6 +54,7 @@ Inherits WebSession
 				"8 - Android"
 				"9 - Blackberry"
 				"10 - OperaMini"
+				"11 - Epiphany"
 			#tag EndEnumValues
 		#tag EndViewProperty
 		#tag ViewProperty
@@ -155,6 +156,7 @@ Inherits WebSession
 				"10 - iPad"
 				"11 - AndroidTablet"
 				"12 - AndroidPhone"
+				"13 - RaspberryPi"
 			#tag EndEnumValues
 		#tag EndViewProperty
 		#tag ViewProperty
@@ -185,7 +187,13 @@ Inherits WebSession
 				"2 - Gecko"
 				"3 - Trident"
 				"4 - Presto"
+				"5 - EdgeHTML"
 			#tag EndEnumValues
+		#tag EndViewProperty
+		#tag ViewProperty
+			Name="ScaleFactor"
+			Group="Behavior"
+			Type="Double"
 		#tag EndViewProperty
 		#tag ViewProperty
 			Name="StatusMessage"
@@ -221,6 +229,12 @@ Inherits WebSession
 			Name="URL"
 			Group="Behavior"
 			Type="String"
+			EditorType="MultiLineEditor"
+		#tag EndViewProperty
+		#tag ViewProperty
+			Name="_baseurl"
+			Group="Behavior"
+			Type="string"
 			EditorType="MultiLineEditor"
 		#tag EndViewProperty
 		#tag ViewProperty

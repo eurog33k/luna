@@ -1,9 +1,12 @@
 #tag Module
 Protected Module modConstants
-	#tag Constant, Name = UseMySQL, Type = Boolean, Dynamic = False, Default = \"True", Scope = Public
+	#tag Constant, Name = UseMySQL, Type = Boolean, Dynamic = False, Default = \"False", Scope = Public
 	#tag EndConstant
 
 	#tag Constant, Name = UsePostgreSQL, Type = Boolean, Dynamic = False, Default = \"False", Scope = Public
+	#tag EndConstant
+
+	#tag Constant, Name = UseSQLite, Type = Boolean, Dynamic = False, Default = \"True", Scope = Public
 	#tag EndConstant
 
 

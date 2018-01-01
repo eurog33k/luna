@@ -52,6 +52,13 @@ Protected Class Luna
 		  Request.Header("Server") = "Luna/" + LunaVersion
 		  
 		  
+		  // Allow requests to come from different domains.
+		  Request.Header("Access-Control-Allow-Origin") = AccessControlAllowOrigin
+		  Request.Header("Access-Control-Allow-Credentials") = AccessControlAllowCredentials
+		  Request.Header("Access-Control-Allow-Methods") = AccessControlAllowMethods
+		  Request.Header("Access-Control-Allow-Headers") = AccessControlAllowHeaders
+		  
+		  
 		  // Assume that no errors will be encountered during the construction of the object.
 		  Request.Status = 200
 		  
@@ -64,8 +71,8 @@ Protected Class Luna
 		  End If
 		  
 		  // Create and configure a database connection object.
-		  #if UseMySQL and UsePostgreSQL
-		    #pragma Error "You need to set only one of the constants (UseMySQL or UsePostgreSQL) to True to be able to work"
+		  #if (UseMySQL and (UsePostgreSQL or UseSQLite)) or (UsePostgreSQL and (UseMySQL or UseSQLite)) or (UseSQLite and (UseMySQL or UsePostgreSQL))
+		    #pragma Error "You may only set one of the constants (UseMySQL, UsePostgreSQL or UseSQLite) to True to be able to work"
 		  #elseif UseMySQL
 		    DatabaseConnection = New MySQLCommunityServer
 		    DatabaseConnection.Host = DatabaseHost
@@ -78,6 +85,11 @@ Protected Class Luna
 		    pgDatabaseConnection.UserName = DatabaseUserName
 		    pgDatabaseConnection.Password = DatabasePassword
 		    pgDatabaseConnection.DatabaseName = DatabaseName
+		  #elseif UseSQLite
+		    Dim dbFile As FolderItem
+		    db = New SQLiteDatabase
+		    dbFile = GetFolderItem("db/" + DatabaseName  + ".sqlite")
+		    db.DatabaseFile = dbFile
 		  #Else
 		    #pragma Error "You need to set one of the constants (UseMySQL or UsePostgreSQL) to True to be able to work"
 		  #endif
@@ -93,6 +105,12 @@ Protected Class Luna
 		    If not pgDatabaseConnection.Connect Then
 		      Request.Status = 500
 		      Request.Print( ErrorResponseCreate ( "500", "Unable to connect to the database.", "Database error code: " + pgDatabaseConnection.ErrorCode.ToText) )
+		      Return
+		    End If
+		  #elseif UseSQLite
+		    If not db.Connect Then
+		      Request.Status = 500
+		      Request.Print( ErrorResponseCreate ( "500", "Unable to connect to the database.", "Database error code: " + db.ErrorCode.ToText) )
 		      Return
 		    End If
 		  #endif
@@ -145,7 +163,7 @@ Protected Class Luna
 		  + "<body style=""background-color: #eeeeee;"">" _
 		  + "<div style=""margin: 0 auto; margin-top: 24px; background-color: #ffffff; padding: 24px; width: 400px; border: 1px #ccc solid; border-radius: 12px; box-shadow: 10px 10px 5px #cccccc; "">" _
 		  + "<p style=""text-align: center;"">" _
-		  + "<img src=""http://timdietrich.me/luna/images/luna_logo_03.jpg"" style=""max-width: 300px; margin-bottom: 24px;""><br />" _
+		  + "<img src=""../images/luna_logo_03.jpg"" style=""max-width: 300px; margin-bottom: 24px;""><br />" _
 		  + "<!--<span style=""font-weight: bold; font-size: 120px; color: #32cd32; font-family: Helvetica;"">Luna</span><br />-->" _
 		  + "<span style=""font-weight: normal; font-size: 14px; color: #8F8F8F margin-top: 0px; font-family: Helvetica;"">A RESTful API Server Framework for Xojo</span></p>" _
 		  + "<p style=""text-align: center; font-family: Helvetica; font-size: 12px; color: #cccccc;"">Version " + LunaVersion + "</p>" _
@@ -620,7 +638,27 @@ Protected Class Luna
 
 
 	#tag Property, Flags = &h0
+		AccessControlAllowCredentials As String = "true"
+	#tag EndProperty
+
+	#tag Property, Flags = &h0
+		AccessControlAllowHeaders As String = "Content-Type, Authorization"
+	#tag EndProperty
+
+	#tag Property, Flags = &h0
+		AccessControlAllowMethods As String = "GET, POST, PUT, PATCH, DELETE"
+	#tag EndProperty
+
+	#tag Property, Flags = &h0
+		AccessControlAllowOrigin As String = "*"
+	#tag EndProperty
+
+	#tag Property, Flags = &h0
 		DatabaseConnection As MySQLCommunityServer
+	#tag EndProperty
+
+	#tag Property, Flags = &h0
+		db As SQLiteDatabase
 	#tag EndProperty
 
 	#tag Property, Flags = &h0
@@ -656,6 +694,34 @@ Protected Class Luna
 
 
 	#tag ViewBehavior
+		#tag ViewProperty
+			Name="AccessControlAllowCredentials"
+			Group="Behavior"
+			InitialValue="true"
+			Type="String"
+			EditorType="MultiLineEditor"
+		#tag EndViewProperty
+		#tag ViewProperty
+			Name="AccessControlAllowHeaders"
+			Group="Behavior"
+			InitialValue="Content-Type, Authorization"
+			Type="String"
+			EditorType="MultiLineEditor"
+		#tag EndViewProperty
+		#tag ViewProperty
+			Name="AccessControlAllowMethods"
+			Group="Behavior"
+			InitialValue="GET, POST, PUT, PATCH, DELETE"
+			Type="String"
+			EditorType="MultiLineEditor"
+		#tag EndViewProperty
+		#tag ViewProperty
+			Name="AccessControlAllowOrigin"
+			Group="Behavior"
+			InitialValue="*"
+			Type="String"
+			EditorType="MultiLineEditor"
+		#tag EndViewProperty
 		#tag ViewProperty
 			Name="Index"
 			Visible=true
