@@ -88,7 +88,10 @@ Protected Class Luna
 		  #elseif UseSQLite
 		    Dim dbFile As FolderItem
 		    db = New SQLiteDatabase
-		    dbFile = GetFolderItem("db/" + DatabaseName  + ".sqlite")
+		    dbFile = GetFolderItem("")
+		    dbFile = dbFile.Child("db")
+		    dbFile = dbFile.Child(DatabaseName + ".sqlite")
+		    'dbFile = GetFolderItem("db/" + DatabaseName  + ".sqlite")
 		    db.DatabaseFile = dbFile
 		  #Else
 		    #pragma Error "You need to set one of the constants (UseMySQL or UsePostgreSQL) to True to be able to work"
@@ -163,7 +166,7 @@ Protected Class Luna
 		  + "<body style=""background-color: #eeeeee;"">" _
 		  + "<div style=""margin: 0 auto; margin-top: 24px; background-color: #ffffff; padding: 24px; width: 400px; border: 1px #ccc solid; border-radius: 12px; box-shadow: 10px 10px 5px #cccccc; "">" _
 		  + "<p style=""text-align: center;"">" _
-		  + "<img src=""../images/luna_logo_03.jpg"" style=""max-width: 300px; margin-bottom: 24px;""><br />" _
+		  + "<img src=""http://45.32.235.158/Luna/images/luna_logo_03.jpg"" style=""max-width: 300px; margin-bottom: 24px;""><br />" _
 		  + "<!--<span style=""font-weight: bold; font-size: 120px; color: #32cd32; font-family: Helvetica;"">Luna</span><br />-->" _
 		  + "<span style=""font-weight: normal; font-size: 14px; color: #8F8F8F margin-top: 0px; font-family: Helvetica;"">A RESTful API Server Framework for Xojo</span></p>" _
 		  + "<p style=""text-align: center; font-family: Helvetica; font-size: 12px; color: #cccccc;"">Version " + LunaVersion + "</p>" _
@@ -233,6 +236,8 @@ Protected Class Luna
 		    sql = "SELECT " + PKColumn + " FROM " + Table + " WHERE " + PKColumn + " = ?"
 		  #elseif UsePostgreSQL
 		    sql = "SELECT " + Lowercase(PKColumn) + " FROM " + Lowercase(Table) + " WHERE " + Lowercase(PKColumn) + " = $1"
+		  #elseif UseSQLite
+		    sql = "SELECT " + PKColumn + " FROM " + Table + " WHERE " + PKColumn + " = ?"
 		  #endif
 		  
 		  // Create the prepared statement.
@@ -240,11 +245,15 @@ Protected Class Luna
 		    SQLStatement = DatabaseConnection.Prepare(sql)
 		  #elseif UsePostgreSQL
 		    pgSQLStatement = pgDatabaseConnection.Prepare(sql)
+		  #elseif UseSQLite
+		    SQLiteStatement=db.Prepare(sql)
 		  #endif
 		  
 		  // Specify the binding types.
 		  #if UseMySQL
 		    SQLStatement.BindType(0, MySQLPreparedStatement.MYSQL_TYPE_STRING)
+		  #elseif UseSQLite
+		    SQLiteStatement.BindType(0, SQLitePreparedStatement.SQLITE_TEXT)
 		  #endif
 		  
 		  // Bind the values.
@@ -252,6 +261,8 @@ Protected Class Luna
 		    SQLStatement.Bind(0, RequestPathComponents(2))
 		  #elseif UsePostgreSQL
 		    pgSQLStatement.Bind(0, RequestPathComponents(2))
+		  #elseif UseSQLite
+		    SQLiteStatement.Bind(0, RequestPathComponents(2))
 		  #endif
 		  
 		  // Send the request.
@@ -260,6 +271,8 @@ Protected Class Luna
 		    data = SQLStatement.SQLSelect
 		  #elseif UsePostgreSQL
 		    data = pgSQLStatement.SQLSelect
+		  #elseif UseSQLite
+		    data = SQLiteStatement.SQLSelect
 		  #endif
 		  
 		  // If an error was thrown...
@@ -268,7 +281,10 @@ Protected Class Luna
 		    bError=DatabaseConnection.Error
 		  #elseif UsePostgreSQL
 		    bError=pgDatabaseConnection.Error
+		  #elseif UseSQLite
+		    bError=db.Error
 		  #endif
+		  
 		  If bError Then
 		    
 		    Response.Value("ResponseStatus") = 500
@@ -276,6 +292,8 @@ Protected Class Luna
 		      Response.Value("ResponseBody") = ErrorResponseCreate ( "500", "SQL INSERT Failure", "Database error code: " + DatabaseConnection.ErrorCode.ToText)
 		    #elseif UsePostgreSQL
 		      Response.Value("ResponseBody") = ErrorResponseCreate ( "500", "SQL INSERT Failure", "Database error code: " + pgDatabaseConnection.ErrorCode.ToText)
+		    #elseif UseSQLite
+		      Response.Value("ResponseBody") = ErrorResponseCreate ( "500", "SQL INSERT Failure", "Database error code: " + db.ErrorCode.ToText)
 		    #endif
 		    Return Response
 		    
@@ -295,6 +313,8 @@ Protected Class Luna
 		    sql = "DELETE FROM " + Table + " WHERE " + PKColumn + " = ?"
 		  #elseif UsePostgreSQL
 		    sql = "DELETE FROM " + Lowercase(Table) + " WHERE " + Lowercase(PKColumn) + " = $1"
+		  #elseif UseSQLite
+		    sql = "DELETE FROM " + Table + " WHERE " + PKColumn + " = ?"
 		  #endif
 		  
 		  // Create the prepared statement.
@@ -302,11 +322,15 @@ Protected Class Luna
 		    SQLStatement = DatabaseConnection.Prepare(sql)
 		  #elseif UsePostgreSQL
 		    pgSQLStatement = pgDatabaseConnection.Prepare(sql)
+		  #elseif UseSQLite
+		    SQLiteStatement = db.Prepare(sql)
 		  #endif
 		  
 		  // Specify the binding types.
 		  #if UseMySQL
 		    SQLStatement.BindType(0, MySQLPreparedStatement.MYSQL_TYPE_STRING)
+		  #elseif UseSQLite
+		    SQLiteStatement.BindType(0, SQLitePreparedStatement.SQLITE_TEXT)
 		  #endif
 		  
 		  // Bind the values.
@@ -314,6 +338,8 @@ Protected Class Luna
 		    SQLStatement.Bind(0, RequestPathComponents(2))
 		  #elseif UsePostgreSQL
 		    pgSQLStatement.Bind(0, RequestPathComponents(2))
+		  #elseif UseSQLite
+		    SQLiteStatement.Bind(0, RequestPathComponents(2))
 		  #endif
 		  
 		  // Execute the statement.
@@ -321,6 +347,8 @@ Protected Class Luna
 		    SQLStatement.SQLExecute
 		  #elseif UsePostgreSQL
 		    pgSQLStatement.SQLExecute
+		  #elseif UseSQLite
+		    SQLiteStatement.SQLExecute
 		  #endif
 		  
 		  // If an error was thrown...
@@ -328,6 +356,8 @@ Protected Class Luna
 		    bError=DatabaseConnection.Error
 		  #elseif UsePostgreSQL
 		    bError=pgDatabaseConnection.Error
+		  #elseif UseSQLite
+		    bError=db.Error
 		  #endif
 		  If bError Then
 		    Response.Value("ResponseStatus") = 500
@@ -335,6 +365,8 @@ Protected Class Luna
 		      Response.Value("ResponseBody") = ErrorResponseCreate ( "500", "DELETE Request Failed", DatabaseConnection.ErrorMessage)
 		    #elseif UsePostgreSQL
 		      Response.Value("ResponseBody") = ErrorResponseCreate ( "500", "DELETE Request Failed", pgDatabaseConnection.ErrorMessage)
+		    #elseif UseSQLite
+		      Response.Value("ResponseBody") = ErrorResponseCreate ( "500", "DELETE Request Failed", db.ErrorMessage)
 		    #endif
 		    Return Response
 		  End If
@@ -344,6 +376,8 @@ Protected Class Luna
 		    sql = "SELECT " + PKColumn + " FROM " + Table + " WHERE " + PKColumn + " = ?"
 		  #elseif UsePostgreSQL
 		    sql = "SELECT " + Lowercase(PKColumn) + " FROM " + Lowercase(Table) + " WHERE " + Lowercase(PKColumn) + " = $1"
+		  #elseif UseSQLite
+		    sql = "SELECT " + PKColumn + " FROM " + Table + " WHERE " + PKColumn + " = ?"
 		  #endif
 		  
 		  // Create the prepared statement.
@@ -351,11 +385,15 @@ Protected Class Luna
 		    SQLStatement = DatabaseConnection.Prepare(sql)
 		  #elseif UsePostgreSQL
 		    pgSQLStatement = pgDatabaseConnection.Prepare(sql)
+		  #elseif UseSQLite
+		    SQLiteStatement = db.Prepare(sql)
 		  #endif
 		  
 		  // Specify the binding types.
 		  #if UseMySQL
 		    SQLStatement.BindType(0, MySQLPreparedStatement.MYSQL_TYPE_STRING)
+		  #elseif UseSQLite
+		    SQLiteStatement.BindType(0, SQLitePreparedStatement.SQLITE_TEXT)
 		  #endif
 		  
 		  // Bind the values.
@@ -363,6 +401,8 @@ Protected Class Luna
 		    SQLStatement.Bind(0, RequestPathComponents(1))
 		  #elseif UsePostgreSQL
 		    pgSQLStatement.Bind(0, RequestPathComponents(1))
+		  #elseif UseSQLite
+		    SQLiteStatement.Bind(0, RequestPathComponents(1))
 		  #endif
 		  
 		  // Send the request.
@@ -370,6 +410,8 @@ Protected Class Luna
 		    data = SQLStatement.SQLSelect
 		  #elseif UsePostgreSQL
 		    data = pgSQLStatement.SQLSelect
+		  #elseif UseSQLite
+		    data = SQLiteStatement.SQLSelect
 		  #endif
 		  
 		  // If there is no data to be returned...
@@ -403,6 +445,8 @@ Protected Class Luna
 		    data = SQLStatement.SQLSelect
 		  #elseif UsePostgreSQL
 		    data = pgSQLStatement.SQLSelect
+		  #elseif UseSQLite
+		    data = SQLiteStatement.SQLSelect
 		  #endif
 		  
 		  // If an error was thrown...
@@ -411,6 +455,8 @@ Protected Class Luna
 		    bError=DatabaseConnection.Error
 		  #elseif UsePostgreSQL
 		    bError=pgDatabaseConnection.Error
+		  #elseif UseSQLite
+		    bError=db.Error
 		  #endif
 		  If bError Then
 		    
@@ -419,6 +465,8 @@ Protected Class Luna
 		      Response.Value("ResponseBody") = ErrorResponseCreate ( "500", "SQL SELECT Failure", "Database error code: " + self.DatabaseConnection.ErrorCode.ToText)
 		    #elseif UsePostgreSQL
 		      Response.Value("ResponseBody") = ErrorResponseCreate ( "500", "SQL SELECT Failure", "Database error code: " + self.pgDatabaseConnection.ErrorCode.ToText)
+		    #elseif UseSQLite
+		      Response.Value("ResponseBody") = ErrorResponseCreate ( "500", "SQL SELECT Failure", "Database error code: " + self.db.ErrorCode.ToText)
 		    #endif
 		    Return Response
 		    
@@ -686,6 +734,10 @@ Protected Class Luna
 			split(Request.Path, "/")
 		#tag EndNote
 		RequestPathComponents() As String
+	#tag EndProperty
+
+	#tag Property, Flags = &h0
+		SQLiteStatement As SQLitePreparedStatement
 	#tag EndProperty
 
 	#tag Property, Flags = &h0

@@ -3,13 +3,33 @@ Protected Class App
 Inherits WebApplication
 	#tag Event
 		Function HandleURL(Request As WebRequest) As Boolean
+		  'Following lines are to test for an empty body (problem with cgi?)
+		  'Dim strBody As String=Request.Entity
+		  'if strBody<>"" Then
+		  'Request.Status = 200
+		  'Request.Print("ECHO: " + strBody)
+		  'Return true
+		  'end if
 		  // Create a new "Luna" APIRequest object for this request.
 		  Dim APIRequest As new Luna(Request, SecureConnectionsRequired, DatabaseHost, DatabaseUserName, DatabasePassword, DatabaseName, DatabaseSchema)
-		  
 		  
 		  // If this is a request for the root, or an error was encountered while preparing to process the request...
 		  If (Request.Path = "") or (Request.Status <> 200) Then
 		    Return True
+		  End If
+		  
+		  
+		  // If this is a preflight request for CORS...
+		  If Request.Method = "OPTIONS" Then
+		    
+		    // We're responding to a preflight request, so we want to add access-control headers.
+		    Request.Header("Access-Control-Allow-Origin") = APIRequest.AccessControlAllowOrigin
+		    Request.Header("Access-Control-Allow-Credentials") = APIRequest.AccessControlAllowCredentials
+		    Request.Header("Access-Control-Allow-Methods") = APIRequest.AccessControlAllowMethods
+		    Request.Header("Access-Control-Allow-Headers") = APIRequest.AccessControlAllowHeaders
+		    Request.Print("")
+		    Return True
+		    
 		  End If
 		  
 		  
@@ -79,6 +99,8 @@ Inherits WebApplication
 		      APIRequest.SQLStatement = APIRequest.DatabaseConnection.Prepare("SELECT " + APIRequest.SQLColumnsPrepare + " FROM Contacts")
 		    #elseif UsePostgreSQL
 		      APIRequest.pgSQLStatement = APIRequest.pgDatabaseConnection.Prepare("SELECT " + APIRequest.SQLColumnsPrepare + " FROM contacts")
+		    #elseif UseSQLite
+		      APIRequest.SQLiteStatement =  APIRequest.db.Prepare("SELECT " + APIRequest.SQLColumnsPrepare + " FROM Contacts")
 		    #endif
 		  Else
 		    #if UseMySQL
@@ -88,6 +110,10 @@ Inherits WebApplication
 		    #elseif UsePostgreSQL
 		      APIRequest.pgSQLStatement = APIRequest.pgDatabaseConnection.Prepare("SELECT " + APIRequest.SQLColumnsPrepare + " FROM contacts WHERE emailaddress = $1")
 		      APIRequest.pgSQLStatement.Bind(0, APIRequest.RequestPathComponents(2))
+		    #elseif UseSQLite
+		      APIRequest.SQLiteStatement = APIRequest.db.Prepare("SELECT " + APIRequest.SQLColumnsPrepare + " FROM contacts WHERE emailaddress = ?")
+		      APIRequest.SQLiteStatement.BindType(0, SQLitePreparedStatement.SQLITE_TEXT)
+		      APIRequest.SQLiteStatement.Bind(0, APIRequest.RequestPathComponents(2))
 		    #endif
 		  End If
 		  
@@ -109,6 +135,10 @@ Inherits WebApplication
 		  #elseif UsePostgreSQL
 		    APIRequest.pgSQLStatement = APIRequest.pgDatabaseConnection.Prepare("SELECT * FROM contacts WHERE emailaddress = $1")
 		    APIRequest.pgSQLStatement.Bind(0, APIRequest.RequestPathComponents(2))
+		  #elseif UseSQLite
+		    APIRequest.SQLiteStatement = APIRequest.db.Prepare("SELECT * FROM Contacts WHERE EmailAddress = ?")
+		    APIRequest.SQLiteStatement.BindType(0, SQLitePreparedStatement.SQLITE_TEXT)
+		    APIRequest.SQLiteStatement.Bind(0, APIRequest.RequestPathComponents(2))
 		  #endif
 		  Response = APIRequest.SQLSELECTProcess
 		  
@@ -200,14 +230,32 @@ Inherits WebApplication
 		    + "zipcode = $12 " _
 		    + "WHERE " _
 		    + "emailaddress = $13"
+		  #elseif UseSQLite
+		    Dim sql As String = "UPDATE Contacts SET " _
+		    + "City = ?, " _
+		    + "Company = ?, " _
+		    + "Domain = ?, " _
+		    + "EmailAddress = ?, " _
+		    + "GivenName = ?, " _
+		    + "Occupation = ?, " _
+		    + "State = ?, " _
+		    + "StreetAddress = ?, " _
+		    + "Surname = ?, " _
+		    + "TelephoneNumber = ?, " _
+		    + "Title = ?, " _
+		    + "ZipCode = ? " _
+		    + "WHERE " _
+		    + "EmailAddress = ?"
 		  #endif
 		  
 		  
 		  // Create the prepared statement.
-		  #if UseMySQL Then
+		  #if UseMySQL
 		    APIRequest.SQLStatement = APIRequest.DatabaseConnection.Prepare(sql)
 		  #elseif UsePostgreSQL
 		    APIRequest.pgSQLStatement = APIRequest.pgDatabaseConnection.Prepare(sql)
+		  #elseif UseSQLite
+		    APIRequest.SQLiteStatement = APIRequest.db.Prepare(sql)
 		  #endif
 		  
 		  // Specify the binding types.
@@ -227,6 +275,20 @@ Inherits WebApplication
 		    APIRequest.SQLStatement.BindType(10, MySQLPreparedStatement.MYSQL_TYPE_STRING)
 		    APIRequest.SQLStatement.BindType(11, MySQLPreparedStatement.MYSQL_TYPE_STRING)
 		    APIRequest.SQLStatement.BindType(12, MySQLPreparedStatement.MYSQL_TYPE_STRING)
+		  #elseif UseSQLite
+		    APIRequest.SQLiteStatement.BindType(0, SQLitePreparedStatement.SQLITE_TEXT)
+		    APIRequest.SQLiteStatement.BindType(1, SQLitePreparedStatement.SQLITE_TEXT)
+		    APIRequest.SQLiteStatement.BindType(2, SQLitePreparedStatement.SQLITE_TEXT)
+		    APIRequest.SQLiteStatement.BindType(3, SQLitePreparedStatement.SQLITE_TEXT)
+		    APIRequest.SQLiteStatement.BindType(4, SQLitePreparedStatement.SQLITE_TEXT)
+		    APIRequest.SQLiteStatement.BindType(5, SQLitePreparedStatement.SQLITE_TEXT)
+		    APIRequest.SQLiteStatement.BindType(6, SQLitePreparedStatement.SQLITE_TEXT)
+		    APIRequest.SQLiteStatement.BindType(7, SQLitePreparedStatement.SQLITE_TEXT)
+		    APIRequest.SQLiteStatement.BindType(8, SQLitePreparedStatement.SQLITE_TEXT)
+		    APIRequest.SQLiteStatement.BindType(9, SQLitePreparedStatement.SQLITE_TEXT)
+		    APIRequest.SQLiteStatement.BindType(10, SQLitePreparedStatement.SQLITE_TEXT)
+		    APIRequest.SQLiteStatement.BindType(11, SQLitePreparedStatement.SQLITE_TEXT)
+		    APIRequest.SQLiteStatement.BindType(12, SQLitePreparedStatement.SQLITE_TEXT)
 		  #endif
 		  
 		  
@@ -259,6 +321,20 @@ Inherits WebApplication
 		    APIRequest.pgSQLStatement.Bind(10, APIRequest.RequestJSON.Value("Title"))
 		    APIRequest.pgSQLStatement.Bind(11, APIRequest.RequestJSON.Value("ZipCode"))
 		    APIRequest.pgSQLStatement.Bind(12, APIRequest.RequestPathComponents(2))
+		  #elseif UseSQLite
+		    APIRequest.SQLiteStatement.Bind(0, APIRequest.RequestJSON.Value("City"))
+		    APIRequest.SQLiteStatement.Bind(1, APIRequest.RequestJSON.Value("Company"))
+		    APIRequest.SQLiteStatement.Bind(2, APIRequest.RequestJSON.Value("Domain"))
+		    APIRequest.SQLiteStatement.Bind(3, APIRequest.RequestJSON.Value("EmailAddress"))
+		    APIRequest.SQLiteStatement.Bind(4, APIRequest.RequestJSON.Value("GivenName"))
+		    APIRequest.SQLiteStatement.Bind(5, APIRequest.RequestJSON.Value("Occupation"))
+		    APIRequest.SQLiteStatement.Bind(6, APIRequest.RequestJSON.Value("State"))
+		    APIRequest.SQLiteStatement.Bind(7, APIRequest.RequestJSON.Value("StreetAddress"))
+		    APIRequest.SQLiteStatement.Bind(8, APIRequest.RequestJSON.Value("Surname"))
+		    APIRequest.SQLiteStatement.Bind(9, APIRequest.RequestJSON.Value("TelephoneNumber"))
+		    APIRequest.SQLiteStatement.Bind(10, APIRequest.RequestJSON.Value("Title"))
+		    APIRequest.SQLiteStatement.Bind(11, APIRequest.RequestJSON.Value("ZipCode"))
+		    APIRequest.SQLiteStatement.Bind(12, APIRequest.RequestPathComponents(2))
 		  #endif
 		  
 		  
@@ -267,6 +343,8 @@ Inherits WebApplication
 		    APIRequest.SQLStatement.SQLExecute
 		  #elseif UseMySQL
 		    APIRequest.pgSQLStatement.SQLExecute
+		  #elseif UseSQLite
+		    APIRequest.SQLiteStatement.SQLExecute
 		  #endif
 		  
 		  // If an error was thrown...
@@ -275,6 +353,8 @@ Inherits WebApplication
 		    bError=APIRequest.DatabaseConnection.Error
 		  #elseif UsePostgreSQL
 		    bError=APIRequest.pgDatabaseConnection.Error
+		  #elseif UseSQLite
+		    bError=APIRequest.db.Error
 		  #endif
 		  If bError Then
 		    Response.Value("ResponseStatus") = 500
@@ -282,6 +362,8 @@ Inherits WebApplication
 		      Response.Value("ResponseBody") = APIRequest.ErrorResponseCreate ( "500", "SQL UPDATE Failure", "Database error code: " + APIRequest.DatabaseConnection.ErrorCode.ToText) 
 		    #elseif UsePostgreSQL
 		      Response.Value("ResponseBody") = APIRequest.ErrorResponseCreate ( "500", "SQL UPDATE Failure", "Database error code: " + APIRequest.pgDatabaseConnection.ErrorCode.ToText) 
+		    #elseif UseSQLite
+		      Response.Value("ResponseBody") = APIRequest.ErrorResponseCreate ( "500", "SQL UPDATE Failure", "Database error code: " + APIRequest.db.ErrorCode.ToText) 
 		    #endif
 		    Return Response
 		  End If
@@ -297,6 +379,11 @@ Inherits WebApplication
 		    sql = "SELECT * FROM contacts WHERE emailaddress = $1"
 		    APIRequest.pgSQLStatement = APIRequest.pgDatabaseConnection.Prepare(sql)
 		    APIRequest.pgSQLStatement.Bind(0, APIRequest.RequestJSON.Value("EmailAddress"))
+		  #elseif UseSQLite
+		    sql = "SELECT * FROM Contacts WHERE EmailAddress = ?"
+		    APIRequest.SQLiteStatement = APIRequest.db.Prepare(sql)
+		    APIRequest.SQLiteStatement.BindType(0, SQLitePreparedStatement.SQLITE_TEXT)
+		    APIRequest.SQLiteStatement.Bind(0, APIRequest.RequestJSON.Value("EmailAddress"))
 		  #endif
 		  
 		  
@@ -329,6 +416,10 @@ Inherits WebApplication
 		    Dim sql As String = "INSERT INTO contacts " _
 		    + "( city, company, domain, emailaddress, givenname, occupation, state, streetaddress, surname, telephonenumber, title, zipcode) " _
 		    + "VALUES ( $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12 )"
+		  #elseif UseSQLite
+		    Dim sql As String = "INSERT INTO Contacts " _
+		    + "( City, Company, Domain, EmailAddress, GivenName, Occupation, State, StreetAddress, Surname, TelephoneNumber, Title, ZipCode) " _
+		    + "VALUES ( ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ? )"
 		  #endif
 		  
 		  // Create the prepared statement.
@@ -336,6 +427,8 @@ Inherits WebApplication
 		    APIRequest.SQLStatement = APIRequest.DatabaseConnection.Prepare(sql)
 		  #elseif UsePostgreSQL
 		    APIRequest.pgSQLStatement = APIRequest.pgDatabaseConnection.Prepare(sql)
+		  #elseif UseSQLite
+		    APIRequest.SQLiteStatement = APIRequest.db.Prepare(sql)
 		  #endif
 		  
 		  // Specify the binding types.
@@ -354,6 +447,19 @@ Inherits WebApplication
 		    APIRequest.SQLStatement.BindType(9, MySQLPreparedStatement.MYSQL_TYPE_STRING)
 		    APIRequest.SQLStatement.BindType(10, MySQLPreparedStatement.MYSQL_TYPE_STRING)
 		    APIRequest.SQLStatement.BindType(11, MySQLPreparedStatement.MYSQL_TYPE_STRING)
+		  #elseif UseSQLite
+		    APIRequest.SQLiteStatement.BindType(0, SQLitePreparedStatement.SQLITE_TEXT)
+		    APIRequest.SQLiteStatement.BindType(1, SQLitePreparedStatement.SQLITE_TEXT)
+		    APIRequest.SQLiteStatement.BindType(2, SQLitePreparedStatement.SQLITE_TEXT)
+		    APIRequest.SQLiteStatement.BindType(3, SQLitePreparedStatement.SQLITE_TEXT)
+		    APIRequest.SQLiteStatement.BindType(4, SQLitePreparedStatement.SQLITE_TEXT)
+		    APIRequest.SQLiteStatement.BindType(5, SQLitePreparedStatement.SQLITE_TEXT)
+		    APIRequest.SQLiteStatement.BindType(6, SQLitePreparedStatement.SQLITE_TEXT)
+		    APIRequest.SQLiteStatement.BindType(7, SQLitePreparedStatement.SQLITE_TEXT)
+		    APIRequest.SQLiteStatement.BindType(8, SQLitePreparedStatement.SQLITE_TEXT)
+		    APIRequest.SQLiteStatement.BindType(9, SQLitePreparedStatement.SQLITE_TEXT)
+		    APIRequest.SQLiteStatement.BindType(10, SQLitePreparedStatement.SQLITE_TEXT)
+		    APIRequest.SQLiteStatement.BindType(11, SQLitePreparedStatement.SQLITE_TEXT)
 		  #endif
 		  
 		  
@@ -384,6 +490,19 @@ Inherits WebApplication
 		    APIRequest.pgSQLStatement.Bind(9, APIRequest.RequestJSON.Value("TelephoneNumber"))
 		    APIRequest.pgSQLStatement.Bind(10, APIRequest.RequestJSON.Value("Title"))
 		    APIRequest.pgSQLStatement.Bind(11, APIRequest.RequestJSON.Value("ZipCode"))
+		  #elseif UseSQLite
+		    APIRequest.SQLiteStatement.Bind(0, APIRequest.RequestJSON.Value("City"))
+		    APIRequest.SQLiteStatement.Bind(1, APIRequest.RequestJSON.Value("Company"))
+		    APIRequest.SQLiteStatement.Bind(2, APIRequest.RequestJSON.Value("Domain"))
+		    APIRequest.SQLiteStatement.Bind(3, APIRequest.RequestJSON.Value("EmailAddress"))
+		    APIRequest.SQLiteStatement.Bind(4, APIRequest.RequestJSON.Value("GivenName"))
+		    APIRequest.SQLiteStatement.Bind(5, APIRequest.RequestJSON.Value("Occupation"))
+		    APIRequest.SQLiteStatement.Bind(6, APIRequest.RequestJSON.Value("State"))
+		    APIRequest.SQLiteStatement.Bind(7, APIRequest.RequestJSON.Value("StreetAddress"))
+		    APIRequest.SQLiteStatement.Bind(8, APIRequest.RequestJSON.Value("Surname"))
+		    APIRequest.SQLiteStatement.Bind(9, APIRequest.RequestJSON.Value("TelephoneNumber"))
+		    APIRequest.SQLiteStatement.Bind(10, APIRequest.RequestJSON.Value("Title"))
+		    APIRequest.SQLiteStatement.Bind(11, APIRequest.RequestJSON.Value("ZipCode"))
 		  #endif
 		  
 		  // Execute the statement.
@@ -391,6 +510,8 @@ Inherits WebApplication
 		    APIRequest.SQLStatement.SQLExecute
 		  #elseif UsePostgreSQL
 		    APIRequest.pgSQLStatement.SQLExecute
+		  #elseif UseSQLite
+		    APIRequest.SQLiteStatement.SQLExecute
 		  #endif
 		  
 		  
@@ -400,6 +521,8 @@ Inherits WebApplication
 		    bError=APIRequest.DatabaseConnection.Error
 		  #elseif UsePostgreSQL
 		    bError=APIRequest.pgDatabaseConnection.Error
+		  #elseif UseSQLite
+		    bError=APIRequest.db.Error
 		  #endif
 		  If bError Then
 		    Response.Value("ResponseStatus") = 500
@@ -407,6 +530,8 @@ Inherits WebApplication
 		      Response.Value("ResponseBody") = APIRequest.ErrorResponseCreate ( "500", "SQL INSERT Failure", "Database error code: " + APIRequest.DatabaseConnection.ErrorCode.ToText) 
 		    #elseif UsePostgreSQL
 		      Response.Value("ResponseBody") = APIRequest.ErrorResponseCreate ( "500", "SQL INSERT Failure", "Database error code: " + APIRequest.pgDatabaseConnection.ErrorCode.ToText) 
+		    #elseif UseSQLite
+		      Response.Value("ResponseBody") = APIRequest.ErrorResponseCreate ( "500", "SQL INSERT Failure", "Database error code: " + APIRequest.db.ErrorCode.ToText) 
 		    #endif
 		    Return Response
 		  End If
@@ -422,6 +547,11 @@ Inherits WebApplication
 		    sql = "SELECT * FROM contacts WHERE emailaddress = $1"
 		    APIRequest.pgSQLStatement = APIRequest.pgDatabaseConnection.Prepare(sql)
 		    APIRequest.pgSQLStatement.Bind(0, APIRequest.RequestJSON.Value("EmailAddress"))
+		  #elseif UseSQLite
+		    sql = "SELECT * FROM Contacts WHERE EmailAddress = ?"
+		    APIRequest.SQLiteStatement = APIRequest.db.Prepare(sql)
+		    APIRequest.SQLiteStatement.BindType(0, SQLitePreparedStatement.SQLITE_TEXT)
+		    APIRequest.SQLiteStatement.Bind(0, APIRequest.RequestJSON.Value("EmailAddress"))
 		  #endif
 		  
 		  // Get the newly added record.
@@ -460,6 +590,10 @@ Inherits WebApplication
 		  #elseif UsePostgreSQL
 		    APIRequest.pgSQLStatement = APIRequest.pgDatabaseConnection.Prepare("SELECT * FROM contacts WHERE emailaddress = $1")
 		    APIRequest.pgSQLStatement.Bind(0, APIRequest.RequestPathComponents(2))
+		  #elseif UseSQLite
+		    APIRequest.SQLiteStatement = APIRequest.db.Prepare("SELECT * FROM Contacts WHERE EmailAddress = ?")
+		    APIRequest.SQLiteStatement.BindType(0,SQLitePreparedStatement.SQLITE_TEXT)
+		    APIRequest.SQLiteStatement.Bind(0, APIRequest.RequestPathComponents(2))
 		  #endif
 		  Response = APIRequest.SQLSELECTProcess
 		  
@@ -503,6 +637,22 @@ Inherits WebApplication
 		    + "zipcode = $12 " _
 		    + "WHERE " _
 		    + "emailaddress = $13"
+		  #elseif UseSQLite
+		    sql = "UPDATE Contacts SET " _
+		    + "City = ?, " _
+		    + "Company = ?, " _
+		    + "Domain = ?, " _
+		    + "EmailAddress = ?, " _
+		    + "GivenName = ?, " _
+		    + "Occupation = ?, " _
+		    + "State = ?, " _
+		    + "StreetAddress = ?, " _
+		    + "Surname = ?, " _
+		    + "TelephoneNumber = ?, " _
+		    + "Title = ?, " _
+		    + "ZipCode = ? " _
+		    + "WHERE " _
+		    + "EmailAddress = ?"
 		  #endif
 		  
 		  // Create the prepared statement.
@@ -510,6 +660,8 @@ Inherits WebApplication
 		    APIRequest.SQLStatement = APIRequest.DatabaseConnection.Prepare(sql)
 		  #elseif UsePostgreSQL
 		    APIRequest.pgSQLStatement = APIRequest.pgDatabaseConnection.Prepare(sql)
+		  #elseif UseSQLite
+		    APIRequest.SQLiteStatement = APIRequest.db.Prepare(sql)
 		  #endif
 		  
 		  // Specify the binding types.
@@ -529,6 +681,20 @@ Inherits WebApplication
 		    APIRequest.SQLStatement.BindType(10, MySQLPreparedStatement.MYSQL_TYPE_STRING)
 		    APIRequest.SQLStatement.BindType(11, MySQLPreparedStatement.MYSQL_TYPE_STRING)
 		    APIRequest.SQLStatement.BindType(12, MySQLPreparedStatement.MYSQL_TYPE_STRING)
+		  #elseif UseSQLite
+		    APIRequest.SQLiteStatement.BindType(0, SQLitePreparedStatement.SQLITE_TEXT)
+		    APIRequest.SQLiteStatement.BindType(1, SQLitePreparedStatement.SQLITE_TEXT)
+		    APIRequest.SQLiteStatement.BindType(2, SQLitePreparedStatement.SQLITE_TEXT)
+		    APIRequest.SQLiteStatement.BindType(3, SQLitePreparedStatement.SQLITE_TEXT)
+		    APIRequest.SQLiteStatement.BindType(4, SQLitePreparedStatement.SQLITE_TEXT)
+		    APIRequest.SQLiteStatement.BindType(5, SQLitePreparedStatement.SQLITE_TEXT)
+		    APIRequest.SQLiteStatement.BindType(6, SQLitePreparedStatement.SQLITE_TEXT)
+		    APIRequest.SQLiteStatement.BindType(7, SQLitePreparedStatement.SQLITE_TEXT)
+		    APIRequest.SQLiteStatement.BindType(8, SQLitePreparedStatement.SQLITE_TEXT)
+		    APIRequest.SQLiteStatement.BindType(9, SQLitePreparedStatement.SQLITE_TEXT)
+		    APIRequest.SQLiteStatement.BindType(10, SQLitePreparedStatement.SQLITE_TEXT)
+		    APIRequest.SQLiteStatement.BindType(11, SQLitePreparedStatement.SQLITE_TEXT)
+		    APIRequest.SQLiteStatement.BindType(12, SQLitePreparedStatement.SQLITE_TEXT)
 		  #endif
 		  
 		  // Bind the values.
@@ -560,6 +726,20 @@ Inherits WebApplication
 		    APIRequest.pgSQLStatement.Bind(10, APIRequest.RequestJSON.Value("Title"))
 		    APIRequest.pgSQLStatement.Bind(11, APIRequest.RequestJSON.Value("ZipCode"))
 		    APIRequest.pgSQLStatement.Bind(12, APIRequest.RequestPathComponents(2))
+		  #elseif UseSQLite
+		    APIRequest.SQLiteStatement.Bind(0, APIRequest.RequestJSON.Value("City"))
+		    APIRequest.SQLiteStatement.Bind(1, APIRequest.RequestJSON.Value("Company"))
+		    APIRequest.SQLiteStatement.Bind(2, APIRequest.RequestJSON.Value("Domain"))
+		    APIRequest.SQLiteStatement.Bind(3, APIRequest.RequestJSON.Value("EmailAddress"))
+		    APIRequest.SQLiteStatement.Bind(4, APIRequest.RequestJSON.Value("GivenName"))
+		    APIRequest.SQLiteStatement.Bind(5, APIRequest.RequestJSON.Value("Occupation"))
+		    APIRequest.SQLiteStatement.Bind(6, APIRequest.RequestJSON.Value("State"))
+		    APIRequest.SQLiteStatement.Bind(7, APIRequest.RequestJSON.Value("StreetAddress"))
+		    APIRequest.SQLiteStatement.Bind(8, APIRequest.RequestJSON.Value("Surname"))
+		    APIRequest.SQLiteStatement.Bind(9, APIRequest.RequestJSON.Value("TelephoneNumber"))
+		    APIRequest.SQLiteStatement.Bind(10, APIRequest.RequestJSON.Value("Title"))
+		    APIRequest.SQLiteStatement.Bind(11, APIRequest.RequestJSON.Value("ZipCode"))
+		    APIRequest.SQLiteStatement.Bind(12, APIRequest.RequestPathComponents(2))
 		  #endif
 		  
 		  // Execute the statement.
@@ -567,6 +747,8 @@ Inherits WebApplication
 		    APIRequest.SQLStatement.SQLExecute
 		  #elseif UsePostgreSQL
 		    APIRequest.pgSQLStatement.SQLExecute
+		  #elseif UseSQLite
+		    APIRequest.SQLiteStatement.SQLExecute
 		  #endif
 		  
 		  
@@ -576,6 +758,8 @@ Inherits WebApplication
 		    bError=APIRequest.DatabaseConnection.Error
 		  #elseif UsePostgreSQL
 		    bError=APIRequest.pgDatabaseConnection.Error
+		  #elseif UseSQLite
+		    bError=APIRequest.db.Error
 		  #endif
 		  If bError Then
 		    Response.Value("ResponseStatus") = 500
@@ -583,6 +767,8 @@ Inherits WebApplication
 		      Response.Value("ResponseBody") = APIRequest.ErrorResponseCreate ( "500", "SQL UPDATE Failure", "Database error code: " + APIRequest.DatabaseConnection.ErrorCode.ToText) 
 		    #elseif UsePostgreSQL
 		      Response.Value("ResponseBody") = APIRequest.ErrorResponseCreate ( "500", "SQL UPDATE Failure", "Database error code: " + APIRequest.pgDatabaseConnection.ErrorCode.ToText) 
+		    #elseif UseSQLite
+		      Response.Value("ResponseBody") = APIRequest.ErrorResponseCreate ( "500", "SQL UPDATE Failure", "Database error code: " + APIRequest.db.ErrorCode.ToText) 
 		    #endif
 		    Return Response
 		  End If
@@ -598,12 +784,15 @@ Inherits WebApplication
 		    sql = "SELECT * FROM contacts WHERE emailaddress = $1"
 		    APIRequest.pgSQLStatement = APIRequest.pgDatabaseConnection.Prepare(sql)
 		    APIRequest.pgSQLStatement.Bind(0, APIRequest.RequestJSON.Value("EmailAddress"))
+		  #elseif UseSQLite
+		    sql = "SELECT * FROM Contacts WHERE EmailAddress = ?"
+		    APIRequest.SQLiteStatement = APIRequest.db.Prepare(sql)
+		    APIRequest.SQLiteStatement.BindType(0, SQLitePreparedStatement.SQLITE_TEXT)
+		    APIRequest.SQLiteStatement.Bind(0, APIRequest.RequestJSON.Value("EmailAddress"))
 		  #endif
-		  
 		  
 		  // Return the updated record.
 		  Return APIRequest.SQLSELECTProcess
-		  
 		  
 		  
 		End Function
@@ -615,6 +804,8 @@ Inherits WebApplication
 		    Return strFieldname
 		  #elseif UsePostgreSQL
 		    Return Lowercase(strFieldname)
+		  #elseif UseSQLite
+		    Return strFieldname
 		  #endif
 		  
 		End Function
@@ -657,7 +848,7 @@ Inherits WebApplication
 	#tag EndProperty
 
 	#tag Property, Flags = &h0
-		DatabaseName As String = "your.database.name"
+		DatabaseName As String = "testdb"
 	#tag EndProperty
 
 	#tag Property, Flags = &h0
