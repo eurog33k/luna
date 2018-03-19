@@ -42,6 +42,11 @@ A Postman file that you can use to make API calls has been included as well. Pos
 
 Tim Dietrich: http://timdietrich.me/
 
+Additions by Dirk Cleenwerck:
+Support for PostgreSQL
+Support for SQLite
+Support for Postman API testing
+
 ## Special Thanks
 
 Paul Lefebvre of Xojo, Inc.: http://xojo.com
