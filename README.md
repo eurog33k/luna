@@ -2,7 +2,7 @@ About Luna
 ==========
 
 Luna is a Xojo-based framework that can be used to create RESTful APIs for 
-MySQL and Amazon Aurora databases.
+MySQL, PostgreSQL, SQLite and Amazon Aurora databases.
 
 With Luna, Xojo developers can quickly and easily implement feature-rich, 
 professional, secure, and scalable REST APIs.
@@ -19,9 +19,6 @@ Luna's features include:
 - POST, PUT and PATCH bodies are JSON-encoded.
 - Easy implementation of your preferred authentication method.
 
-Learn more: http://timdietrich.me/luna/
-
-
 ## Setup / Configuration
 
 Specify your database connection information via the App's properties. There are properties for the database host address (DatabaseHost), the name of the database (DatabaseName), as well as the account name (DatabaseUserName) and password (DatabasePassword) that you would like Luna to use to access the database.
@@ -35,16 +32,15 @@ For each endpoint that you wish to support, create a corresponding app method. N
 
 ## Sample Data
 
-I've provided a SQL script that you might want to use to load up a MySQL table for testing Luna. The script creates a Contacts table and loads it with 500 sample (fake) contact records.
+I've provided a SQL scripts that you might want to use to load up a MySQL, PostgreSQL or SQLite table for testing Luna. The scripts create a Contacts table and load it with 500 sample (fake) contact records.
 
 I've also provided a Paw file that you can use to make API calls. Paw is a REST client for the Mac. For details, visit: https://luckymarmot.com/paw
 
+A Postman file that you can use to make API calls has been included as well. Postman is a REST client for Mac, Windows, Linux. For details, visit: https://www.getpostman.com/
 
 ## Developed By
 
 Tim Dietrich: http://timdietrich.me/
-
-
 
 ## Special Thanks
 
