@@ -43,9 +43,9 @@ A Postman file that you can use to make API calls has been included as well. Pos
 Tim Dietrich: http://timdietrich.me/
 
 Additions by Dirk Cleenwerck:
-Support for PostgreSQL
-Support for SQLite
-Support for Postman API testing
+- Support for PostgreSQL
+- Support for SQLite
+- Support for Postman API testing
 
 ## Special Thanks
 
