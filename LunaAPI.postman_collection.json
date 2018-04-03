@@ -1,8 +1,7 @@
 {
 	"info": {
-		"name": "LunaAPI",
 		"_postman_id": "1412d267-f426-4dfe-905d-f36323708d7a",
-		"description": "",
+		"name": "LunaAPI",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
 	},
 	"item": [
@@ -25,23 +24,19 @@
 							"raw": ""
 						},
 						"url": {
-							"raw": "http://45.32.235.158/cgi-bin/Luna/luna.cgi/v1/Contacts",
+							"raw": "http://167.99.47.138/v1/Contacts",
 							"protocol": "http",
 							"host": [
-								"45",
-								"32",
-								"235",
-								"158"
+								"167",
+								"99",
+								"47",
+								"138"
 							],
 							"path": [
-								"cgi-bin",
-								"Luna",
-								"luna.cgi",
 								"v1",
 								"Contacts"
 							]
-						},
-						"description": ""
+						}
 					},
 					"response": []
 				},
@@ -60,24 +55,20 @@
 							"raw": ""
 						},
 						"url": {
-							"raw": "http://45.32.235.158/cgi-bin/Luna/luna.cgi/v1/Contacts/ShirleySBruce@einrot.com",
+							"raw": "http://167.99.47.138/v1/Contacts/ShirleySBruce@einrot.com",
 							"protocol": "http",
 							"host": [
-								"45",
-								"32",
-								"235",
-								"158"
+								"167",
+								"99",
+								"47",
+								"138"
 							],
 							"path": [
-								"cgi-bin",
-								"Luna",
-								"luna.cgi",
 								"v1",
 								"Contacts",
 								"ShirleySBruce@einrot.com"
 							]
-						},
-						"description": ""
+						}
 					},
 					"response": []
 				},
@@ -100,21 +91,19 @@
 							"raw": "{\"Title\":\"Mr.\",\"GivenName\":\"Timothy\",\"Surname\":\"Dietrich\",\"StreetAddress\":\"500 Xojo Way\",\"City\":\"Sedona\",\"State\":\"AZ\",\"ZipCode\":\"86336\",\"EmailAddress\":\"timdietrich@me.com\",\"TelephoneNumber\":\"800-555-4TIM\",\"Occupation\":\"Apple TV App Developer\",\"Company\":\"Dietrich Enterprises, LLC\",\"Domain\":\"timdietrich.me\"}"
 						},
 						"url": {
-							"raw": "http://127.0.0.1:8080/v1/Contacts",
+							"raw": "http://167.99.47.138/v1/Contacts",
 							"protocol": "http",
 							"host": [
-								"127",
-								"0",
-								"0",
-								"1"
+								"167",
+								"99",
+								"47",
+								"138"
 							],
-							"port": "8080",
 							"path": [
 								"v1",
 								"Contacts"
 							]
-						},
-						"description": null
+						}
 					},
 					"response": []
 				},
@@ -137,22 +126,20 @@
 							"raw": "{\"Title\":\"Mr.\",\"GivenName\":\"Tim\",\"Surname\":\"Dietrich\",\"StreetAddress\":\"500 Xojo Way\",\"City\":\"Sedona\",\"State\":\"AZ\",\"ZipCode\":\"86336\",\"EmailAddress\":\"timdietrich@me.com\",\"TelephoneNumber\":\"800-555-4TIM\",\"Occupation\":\"Apple TV App Developer\",\"Company\":\"Dietrich Enterprises, LLC\",\"Domain\":\"timdietrich.me\"}"
 						},
 						"url": {
-							"raw": "http://127.0.0.1:8080/v1/Contacts/timdietrich@me.com",
+							"raw": "http://167.99.47.138/v1/Contacts/timdietrich@me.com",
 							"protocol": "http",
 							"host": [
-								"127",
-								"0",
-								"0",
-								"1"
+								"167",
+								"99",
+								"47",
+								"138"
 							],
-							"port": "8080",
 							"path": [
 								"v1",
 								"Contacts",
 								"timdietrich@me.com"
 							]
-						},
-						"description": null
+						}
 					},
 					"response": []
 				},
@@ -175,22 +162,20 @@
 							"raw": "{\"StreetAddress\":\"629 Luna Drive\",\"City\":\"Richmond\",\"State\":\"VA\",\"ZipCode\":\"23235\"}"
 						},
 						"url": {
-							"raw": "http://127.0.0.1:8080/v1/Contacts/timdietrich@me.com",
+							"raw": "http://167.99.47.138/v1/Contacts/timdietrich@me.com",
 							"protocol": "http",
 							"host": [
-								"127",
-								"0",
-								"0",
-								"1"
+								"167",
+								"99",
+								"47",
+								"138"
 							],
-							"port": "8080",
 							"path": [
 								"v1",
 								"Contacts",
 								"timdietrich@me.com"
 							]
-						},
-						"description": null
+						}
 					},
 					"response": []
 				},
@@ -209,24 +194,20 @@
 							"raw": ""
 						},
 						"url": {
-							"raw": "http://45.32.235.158/cgi-bin/Luna/luna.cgi/v1/Contacts/timdietrich@me.com",
+							"raw": "http://167.99.47.138/v1/Contacts/timdietrich@me.com",
 							"protocol": "http",
 							"host": [
-								"45",
-								"32",
-								"235",
-								"158"
+								"167",
+								"99",
+								"47",
+								"138"
 							],
 							"path": [
-								"cgi-bin",
-								"Luna",
-								"luna.cgi",
 								"v1",
 								"Contacts",
 								"timdietrich@me.com"
 							]
-						},
-						"description": ""
+						}
 					},
 					"response": []
 				}
@@ -264,8 +245,7 @@
 								"v1",
 								"Contacts"
 							]
-						},
-						"description": ""
+						}
 					},
 					"response": []
 				},
@@ -284,24 +264,21 @@
 							"raw": ""
 						},
 						"url": {
-							"raw": "http://45.32.235.158/cgi-bin/Luna/luna.cgi/v1/Contacts/ShirleySBruce@einrot.com",
+							"raw": "http://127.0.0.1:8080/v1/Contacts/ShirleySBruce@einrot.com",
 							"protocol": "http",
 							"host": [
-								"45",
-								"32",
-								"235",
-								"158"
+								"127",
+								"0",
+								"0",
+								"1"
 							],
+							"port": "8080",
 							"path": [
-								"cgi-bin",
-								"Luna",
-								"luna.cgi",
 								"v1",
 								"Contacts",
 								"ShirleySBruce@einrot.com"
 							]
-						},
-						"description": ""
+						}
 					},
 					"response": []
 				},
@@ -337,8 +314,7 @@
 								"v1",
 								"Contacts"
 							]
-						},
-						"description": ""
+						}
 					},
 					"response": []
 				},
@@ -375,8 +351,7 @@
 								"Contacts",
 								"timdietrich@me.com"
 							]
-						},
-						"description": ""
+						}
 					},
 					"response": []
 				},
@@ -413,8 +388,7 @@
 								"Contacts",
 								"timdietrich@me.com"
 							]
-						},
-						"description": ""
+						}
 					},
 					"response": []
 				},
@@ -433,24 +407,54 @@
 							"raw": ""
 						},
 						"url": {
-							"raw": "http://45.32.235.158/cgi-bin/Luna/luna.cgi/v1/Contacts/timdietrich@me.com",
+							"raw": "http://127.0.0.1:8080/v1/Contacts/timdietrich@me.com",
 							"protocol": "http",
 							"host": [
-								"45",
-								"32",
-								"235",
-								"158"
+								"127",
+								"0",
+								"0",
+								"1"
 							],
+							"port": "8080",
 							"path": [
-								"cgi-bin",
-								"Luna",
-								"luna.cgi",
 								"v1",
 								"Contacts",
 								"timdietrich@me.com"
 							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Contacts - RESET LOCAL",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer taWFk8Z4gR8oGoYtG+7Kycm97UswXW8i87T]HnjcNCGQJgi8JD"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": ""
 						},
-						"description": ""
+						"url": {
+							"raw": "http://127.0.0.1:8080/v1/Contacts/timdietrich@me.com",
+							"protocol": "http",
+							"host": [
+								"127",
+								"0",
+								"0",
+								"1"
+							],
+							"port": "8080",
+							"path": [
+								"v1",
+								"Contacts",
+								"timdietrich@me.com"
+							]
+						}
 					},
 					"response": []
 				}
