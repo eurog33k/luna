@@ -1,15 +1,4 @@
-﻿-- Valentina Studio --
--- MySQL dump --
--- ---------------------------------------------------------
-
-
-/*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
-/*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
-/*!40101 SET @OLD_COLLATION_CONNECTION=@@COLLATION_CONNECTION */;
-/*!40014 SET @OLD_FOREIGN_KEY_CHECKS=@@FOREIGN_KEY_CHECKS, FOREIGN_KEY_CHECKS=0 */;
-/*!40101 SET @OLD_SQL_MODE=@@SQL_MODE, SQL_MODE='NO_AUTO_VALUE_ON_ZERO' */;
--- ---------------------------------------------------------
-
+﻿--DROP TABLE contacts;
 
 -- CREATE TABLE "contacts" ---------------------------------
 CREATE TABLE contacts ( 
@@ -27,7 +16,6 @@ CREATE TABLE contacts (
 	domain VarChar( 200 ) NULL,
 	PRIMARY KEY ( emailaddress ) );
 -- ---------------------------------------------------------
-
 
 -- Dump data of "contacts" ---------------------------------
 INSERT INTO contacts(title,givenname,surname,streetaddress,city,state,zipcode,emailaddress,telephonenumber,occupation,company,domain) VALUES ( 'Mr.', 'George', 'Lopez', '657 Brannon Avenue', 'Jacksonville', 'FL', '32205', 'GeorgeELopez@fleckens.hu', '904-781-8829', 'Substance abuse and behavioral disorder counselor', 'Egghead Software', 'amphidea.com' );
@@ -531,13 +519,4 @@ INSERT INTO contacts(title,givenname,surname,streetaddress,city,state,zipcode,em
 INSERT INTO contacts(title,givenname,surname,streetaddress,city,state,zipcode,emailaddress,telephonenumber,occupation,company,domain) VALUES ( 'Mrs.', 'Rachel', 'Lopez', '4754 Woodland Avenue', 'New Orleans', 'LA', '70113', 'RachelCLopez@cuvox.de', '985-629-9095', 'Watch repairer', 'Newmark & Lewis', 'banksidea.com' );
 INSERT INTO contacts(title,givenname,surname,streetaddress,city,state,zipcode,emailaddress,telephonenumber,occupation,company,domain) VALUES ( 'Ms.', 'Gabriel', 'Lewis', '1551 Sheila Lane', 'Burbank', 'NV', '84728', 'GabrielRLewis@superrito.com', '775-533-4631', 'Prepress technician', 'Weenie Beenie', 'arctoidea.com' );
 -- ---------------------------------------------------------
-
-
-/*!40101 SET SQL_MODE=@OLD_SQL_MODE */;
-/*!40014 SET FOREIGN_KEY_CHECKS=@OLD_FOREIGN_KEY_CHECKS */;
-/*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
-/*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;
-/*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
--- ---------------------------------------------------------
-
 
