@@ -3,13 +3,6 @@ Protected Class App
 Inherits WebApplication
 	#tag Event
 		Function HandleURL(Request As WebRequest) As Boolean
-		  'Following lines are to test for an empty body (problem with cgi?)
-		  'Dim strBody As String=Request.Entity
-		  'if strBody<>"" Then
-		  'Request.Status = 200
-		  'Request.Print("ECHO: " + strBody)
-		  'Return true
-		  'end if
 		  // Create a new "Luna" APIRequest object for this request.
 		  Dim APIRequest As new Luna(Request, SecureConnectionsRequired, DatabaseHost, DatabaseUserName, DatabasePassword, DatabaseName, DatabaseSchema)
 		  
@@ -17,7 +10,6 @@ Inherits WebApplication
 		  If (Request.Path = "") or (Request.Status <> 200) Then
 		    Return True
 		  End If
-		  
 		  
 		  // If this is a preflight request for CORS...
 		  If Request.Method = "OPTIONS" Then
@@ -32,17 +24,29 @@ Inherits WebApplication
 		    
 		  End If
 		  
+		  Dim strPath As String=Request.Path
+		  'if strPath <> "" and  Left(strPath,1) <> "/" Then
+		  'strPath = "/" + Lowercase(strPath)
+		  'end if
 		  
-		  // If the request is not authenticated...
-		  If not RequestAuthenticate(Request, APIRequest) Then 
-		    Request.Status = 401
-		    Return True
+		  //swagger.json does not need to be authenticated
+		  If strPath<>"/v1/swagger.json" Then 
+		    // If the request is not authenticated...
+		    If not RequestAuthenticate(Request, APIRequest) Then 
+		      Request.Status = 401
+		      Return True
+		    End If
 		  End If
 		  
+		  if strPath="/v1/Reset" Then
+		    If not RequestResetPermission(Request, APIRequest) Then 
+		      Request.Status = 401
+		      Return True
+		    End If
+		  end if
 		  
 		  // See if the app has a method that can process this request.
 		  Dim method As Introspection.MethodInfo = APIRequest.AppMethodGet(self, Request)
-		  
 		  
 		  // If a method was found...
 		  If method <> nil Then
@@ -62,7 +66,7 @@ Inherits WebApplication
 		    
 		  Else
 		    Request.Status = 404
-		    Request.Print( APIRequest.ErrorResponseCreate ( "404", "Unsupported API Version, Entity, and/or Method", "") )
+		    Request.Print( APIRequest.ErrorResponseCreate ( "404", "Unsupported API Version, Entity, and/or Method " + strPath + "HandleURL", "") )
 		  End If
 		  
 		  
@@ -81,7 +85,75 @@ Inherits WebApplication
 
 
 	#tag Method, Flags = &h0
-		Function ContactsDeleteV1(APIRequest As Luna) As Dictionary
+		Function GetFieldName(strFieldname As String) As String
+		  #if UseMySQL
+		    Return strFieldname
+		  #elseif UsePostgreSQL
+		    Return Lowercase(strFieldname)
+		  #elseif UseSQLite
+		    Return strFieldname
+		  #endif
+		  
+		End Function
+	#tag EndMethod
+
+	#tag Method, Flags = &h0
+		Function RequestAuthenticate(Request As WebRequest, APIRequest As Luna) As Boolean
+		  // Implement your authentication scheme here.
+		  // Note: This is a *very* simple example of an authentication scheme.
+		  
+		  // Get the Authorization header.
+		  Dim AuthorizationHeader As String = Request.GetRequestHeader("Authorization")
+		  
+		  // If the Authorization has not been specified correctly...
+		  If InStr(0, AuthorizationHeader, "Bearer ") <> 1 Then
+		    Return False
+		  End if
+		  
+		  // Remove the "Bearer" prefix from the value.
+		  AuthorizationHeader = Replace(AuthorizationHeader, "Bearer ", "")
+		  
+		  // In this case, we have a single, hard-coded key that needs to be passed.
+		  Dim APIKey As String = "taWFk8Z4gR8oGoYtG+7Kycm97UswXW8i87T]HnjcNCGQJgi8JD"
+		  
+		  If AuthorizationHeader = APIKey Then
+		    Return True
+		  Else
+		    Return False
+		  End If
+		End Function
+	#tag EndMethod
+
+	#tag Method, Flags = &h0
+		Function RequestResetPermission(Request As WebRequest, APIRequest As Luna) As Boolean
+		  // Implement your reset authentication scheme here.
+		  // Note: This is a *very* simple example of a reset authentication scheme.
+		  
+		  // Get the ResetAuthorization header.
+		  Dim ResetAuthorizationHeader As String = Request.GetRequestHeader("ResetAuthorization")
+		  
+		  // If the Authorization has not been specified correctly...
+		  If InStr(0, ResetAuthorizationHeader, "Bearer ") <> 1 Then
+		    Return False
+		  End if
+		  
+		  // Remove the "Bearer" prefix from the value.
+		  ResetAuthorizationHeader = Replace(ResetAuthorizationHeader, "Bearer ", "")
+		  
+		  
+		  // In this case, we have a single, hard-coded key that needs to be passed.
+		  Dim ResetKey As String = "@3pEg%8SqU@j%M*FdiPrJx*9s%J&ioBGD#^GxseIjRu0&Q9ozD"
+		  
+		  If ResetAuthorizationHeader = ResetKey Then
+		    Return True
+		  Else
+		    Return False
+		  End If
+		End Function
+	#tag EndMethod
+
+	#tag Method, Flags = &h0
+		Function V1_Contacts_Delete(APIRequest As Luna) As Dictionary
 		  // Attempt to delete the record, and return the result.
 		  // Note: The params being passed are the table name and the column name of the primary key.
 		  Return APIRequest.SQLDELETEProcess("Contacts", "EmailAddress")
@@ -90,7 +162,7 @@ Inherits WebApplication
 	#tag EndMethod
 
 	#tag Method, Flags = &h0
-		Function ContactsGetV1(APIRequest As Luna) As Dictionary
+		Function V1_Contacts_Get(APIRequest As Luna) As Dictionary
 		  // If no record ID was specified...
 		  //changed 2 to 1 in the next line because otherwise I only got results if I ended the request with a /
 		  //ending the request with a slash to me does not look like expected functionality (maybe it worked correctly with MySQL?)
@@ -123,7 +195,7 @@ Inherits WebApplication
 	#tag EndMethod
 
 	#tag Method, Flags = &h0
-		Function ContactsPatchV1(APIRequest As Luna) As Dictionary
+		Function V1_Contacts_Patch(APIRequest As Luna) As Dictionary
 		  Dim Response As New Dictionary
 		  
 		  
@@ -395,7 +467,7 @@ Inherits WebApplication
 	#tag EndMethod
 
 	#tag Method, Flags = &h0
-		Function ContactsPostV1(APIRequest As Luna) As Dictionary
+		Function V1_Contacts_Post(APIRequest As Luna) As Dictionary
 		  Dim Response As New Dictionary
 		  
 		  
@@ -570,7 +642,7 @@ Inherits WebApplication
 	#tag EndMethod
 
 	#tag Method, Flags = &h0
-		Function ContactsPutV1(APIRequest As Luna) As Dictionary
+		Function V1_Contacts_Put(APIRequest As Luna) As Dictionary
 		  Dim Response As New Dictionary
 		  Dim sql As String
 		  
@@ -799,46 +871,68 @@ Inherits WebApplication
 	#tag EndMethod
 
 	#tag Method, Flags = &h0
-		Function GetFieldName(strFieldname As String) As String
+		Function v1_Reset_Get(APIRequest As Luna) As Dictionary
+		  Dim strScript As String
+		  Dim sqlFile As FolderItem
+		  sqlFile = GetFolderItem("")
+		  sqlFile = sqlFile.Child("db")
 		  #if UseMySQL
-		    Return strFieldname
+		    sqlFile = sqlFile.Child( "Reset_Contacts_Table_Create_And_Load.sql") 
 		  #elseif UsePostgreSQL
-		    Return Lowercase(strFieldname)
+		    sqlFile = sqlFile.Child( "Reset_Contacts_Table_Create_And_Load_Postgresql.sql") 
 		  #elseif UseSQLite
-		    Return strFieldname
+		    sqlFile = sqlFile.Child( "Reset_Contacts_Table_Create_And_Load_SQLite.sql") 
 		  #endif
+		  
+		  If sqlFile <> Nil Then
+		    If sqlFile.Exists Then
+		      // Be aware that TextInputStream.Open could raise an exception
+		      Dim t As TextInputStream
+		      Try
+		        t = TextInputStream.Open(sqlFile)
+		        t.Encoding = Encodings.UTF8
+		        strScript = t.ReadAll
+		      Catch e As IOException
+		        t.Close
+		        strScript=""
+		      End Try
+		    End If
+		  End If
+		  
+		  // Reset the database.
+		  Return APIRequest.SQLResetProcess(strScript,"Contacts")
 		  
 		End Function
 	#tag EndMethod
 
 	#tag Method, Flags = &h0
-		Function RequestAuthenticate(Request As WebRequest, APIRequest As Luna) As Boolean
-		  // Implement your authentication scheme here.
-		  // Note: This is a *very* simple example of an authentication scheme.
-		  
-		  
-		  // Get the Authorization header.
-		  Dim AuthorizationHeader As String = Request.GetRequestHeader("Authorization")
-		  
-		  
-		  // If the Authorization has not been specified correctly...
-		  If InStr(0, AuthorizationHeader, "Bearer ") <> 1 Then
-		    Return False
-		  End if
-		  
-		  
-		  // Remove the "Bearer" prefix from the value.
-		  AuthorizationHeader = Replace(AuthorizationHeader, "Bearer ", "")
-		  
-		  
-		  // In this case, we have a single, hard-coded key that needs to be passed.
-		  Dim APIKey As String = "taWFk8Z4gR8oGoYtG+7Kycm97UswXW8i87T]HnjcNCGQJgi8JD"
-		  
-		  If AuthorizationHeader = APIKey Then
-		    Return True
-		  Else
-		    Return False
+		Function v1_Swagger_Get(APIRequest As Luna) As Dictionary
+		  Dim Response As New Dictionary
+		  Dim strSwagger As String
+		  Dim swFile As FolderItem
+		  swFile = GetFolderItem("")
+		  swFile = swFile.Child("db")
+		  swFile = swFile.Child( "swagger.json") 
+		  If swFile <> Nil Then
+		    If swFile.Exists Then
+		      // Be aware that TextInputStream.Open could raise an exception
+		      Dim t As TextInputStream
+		      Try
+		        t = TextInputStream.Open(swFile)
+		        t.Encoding = Encodings.UTF8
+		        strSwagger = t.ReadAll
+		      Catch e As IOException
+		        t.Close
+		        strSwagger=""
+		      End Try
+		    End If
 		  End If
+		  
+		  Response.Value("ResponseStatus") = 200
+		  Response.Value("ResponseBody") = strSwagger
+		  
+		  Return Response
+		  
 		End Function
 	#tag EndMethod
 

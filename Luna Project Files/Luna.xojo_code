@@ -9,11 +9,16 @@ Protected Class Luna
 		  // Get the name of the entity being referenced, and remove any underscores.
 		  Dim entityName As String = Replace(RequestPathComponents(1), "_", "")
 		  
+		  if entityName.Lowercase="swagger.json" then
+		    entityName = "swagger"
+		  end if
 		  
 		  // Get the name of the method that should handle the endpoint.
 		  // e.g. DepartmentsGetV1
-		  Dim methodName As String = entityName + Request.Method + apiVersion
-		  
+		  'Dim methodName As String = entityName + Request.Method + apiVersion
+		  //Changed to get sorted by apiVersion
+		  // e.g. v1_Departments_Get
+		  Dim methodName As String = apiversion + "_" + entityName + "_" + Request.Method
 		  
 		  // Get an array of the App's methods.
 		  Dim methods() As Introspection.MethodInfo = Introspection.GetType(App).GetMethods
@@ -43,14 +48,11 @@ Protected Class Luna
 		    Return
 		  End If
 		  
-		  
 		  // All response bodies will be JSON-encoded.
 		  Request.Header("Content-Type") = "application/json"
 		  
-		  
 		  // Set the Server header.
 		  Request.Header("Server") = "Luna/" + LunaVersion
-		  
 		  
 		  // Allow requests to come from different domains.
 		  Request.Header("Access-Control-Allow-Origin") = AccessControlAllowOrigin
@@ -58,10 +60,8 @@ Protected Class Luna
 		  Request.Header("Access-Control-Allow-Methods") = AccessControlAllowMethods
 		  Request.Header("Access-Control-Allow-Headers") = AccessControlAllowHeaders
 		  
-		  
 		  // Assume that no errors will be encountered during the construction of the object.
 		  Request.Status = 200
-		  
 		  
 		  // If secure connections are required, and this connection isn't being made securely...
 		  If SecureConnectionsRequired and not Request.Secure Then
@@ -139,8 +139,13 @@ Protected Class Luna
 		  // /v1/Contacts/47B9FACA-4CAB-41B9-AF21-9ED4E4DD8372/
 		  // Would result in an array with these elements...
 		  // [0] = v1, [1] = Contacts, [2] = 47B9FACA-4CAB-41B9-AF21-9ED4E4DD8372
-		  RequestPathComponents = split(Request.Path, "/")
-		  
+		  Dim strPath As String
+		  strPath=Request.Path
+		  if left(strPath,1)="/" Then
+		    strPath=mid(strPath,2)
+		  end if
+		  'RequestPathComponents = split(Request.Path, "/")
+		  RequestPathComponents = split(strPath, "/")
 		  
 		End Sub
 	#tag EndMethod
@@ -227,7 +232,6 @@ Protected Class Luna
 
 	#tag Method, Flags = &h0
 		Function SQLDELETEProcess(Table As String, PKColumn As String) As Dictionary
-		  
 		  Dim sql As String
 		  Dim Response As New Dictionary
 		  
@@ -433,6 +437,139 @@ Protected Class Luna
 	#tag EndMethod
 
 	#tag Method, Flags = &h0
+		Function SQLResetProcess(strScript As String, Table As String) As Dictionary
+		  Dim sql As String
+		  Dim Response As New Dictionary
+		  If strScript="" Then
+		    Response.Value("ResponseStatus") = 500
+		    Response.Value("ResponseBody") = ErrorResponseCreate ( "500", "Reset Request Failed. StrScript was empty.",  "")
+		    Return Response
+		  End If
+		  
+		  // Records is a JSONItem.
+		  Dim Records As New JSONItem
+		  
+		  // Execute the statement.
+		  //don't run the script as a prepared statement
+		  #if UseMySQL
+		    DatabaseConnection.SQLExecute(strScript)
+		  #elseif UsePostgreSQL
+		    pgDatabaseConnection.SQLExecute(strScript)
+		  #elseif UseSQLite
+		    db.SQLExecute(strScript)
+		  #endif
+		  
+		  // If an error was thrown...
+		  Dim bError As Boolean=False
+		  #if UseMySQL
+		    bError=DatabaseConnection.Error
+		  #elseif UsePostgreSQL
+		    bError=pgDatabaseConnection.Error
+		  #elseif UseSQLite
+		    bError=db.Error
+		  #endif
+		  
+		  If bError Then
+		    
+		    Response.Value("ResponseStatus") = 500
+		    #if UseMySQL
+		      Response.Value("ResponseBody") = ErrorResponseCreate ( "500", "SQL Reset Failure", "Database error code: " + DatabaseConnection.ErrorCode.ToText)
+		    #elseif UsePostgreSQL
+		      Response.Value("ResponseBody") = ErrorResponseCreate ( "500", "SQL Reset Failure", "Database error code: " + pgDatabaseConnection.ErrorCode.ToText)
+		    #elseif UseSQLite
+		      Response.Value("ResponseBody") = ErrorResponseCreate ( "500", "SQL Reset Failure", "Database error code: " + db.ErrorCode.ToText)
+		    #endif
+		    Return Response
+		    
+		  End If
+		  
+		  // Build the SELECT statement.
+		  #if UseMySQL
+		    sql = "SELECT Count(*) FROM " + Table + ";"
+		  #elseif UsePostgreSQL
+		    sql = "SELECT Count(*) FROM " + Table + ";"
+		  #elseif UseSQLite
+		    sql = "SELECT Count(*) FROM " + Table + ";"
+		  #endif
+		  
+		  // Create the prepared statement.
+		  #if UseMySQL
+		    SQLStatement = DatabaseConnection.Prepare(sql)
+		  #elseif UsePostgreSQL
+		    pgSQLStatement = pgDatabaseConnection.Prepare(sql)
+		  #elseif UseSQLite
+		    SQLiteStatement = db.Prepare(sql)
+		  #endif
+		  
+		  // Send the request.
+		  Dim data As RecordSet
+		  #if UseMySQL
+		    data = SQLStatement.SQLSelect
+		  #elseif UsePostgreSQL
+		    data = pgSQLStatement.SQLSelect
+		  #elseif UseSQLite
+		    data = SQLiteStatement.SQLSelect
+		  #endif
+		  
+		  // If an error was thrown...
+		  bError=False
+		  #if UseMySQL
+		    bError=DatabaseConnection.Error
+		  #elseif UsePostgreSQL
+		    bError=pgDatabaseConnection.Error
+		  #elseif UseSQLite
+		    bError=db.Error
+		  #endif
+		  
+		  If bError Then
+		    
+		    Response.Value("ResponseStatus") = 500
+		    #if UseMySQL
+		      Response.Value("ResponseBody") = ErrorResponseCreate ( "500", "SQL SELECT Failure", "Database error code: " + self.DatabaseConnection.ErrorCode.ToText)
+		    #elseif UsePostgreSQL
+		      Response.Value("ResponseBody") = ErrorResponseCreate ( "500", "SQL SELECT Failure", "Database error code: " + self.pgDatabaseConnection.ErrorCode.ToText)
+		    #elseif UseSQLite
+		      Response.Value("ResponseBody") = ErrorResponseCreate ( "500", "SQL SELECT Failure", "Database error code: " + self.db.ErrorCode.ToText)
+		    #endif
+		    Return Response
+		    
+		  End If
+		  
+		  // If there is data to be returned...
+		  If Not data.EOF Then
+		    
+		    // We'll treat the record as a dictionary.
+		    Dim Record As New Dictionary
+		    
+		    // For each column...
+		    For i As Integer = 0 To data.FieldCount-1
+		      // Add the column name / value pair as a dictionary element.
+		      Record.Value( data.IdxField(i+1).Name ) = data.IdxField(i+1).StringValue
+		    Next
+		    
+		    // Add the record to the JSON object.
+		    Records.Append(Record)
+		    
+		    // Close the record.
+		    data.Close
+		    // Return the "200" response with the data.
+		    Response.Value("ResponseStatus") = 200
+		    Response.Value("ResponseBody") = Records.ToString
+		    Return Response
+		    
+		  Else
+		    
+		    Response.Value("ResponseStatus") = 500
+		    Response.Value("ResponseBody") = ErrorResponseCreate ( "500", "Reset Request Failed",  "")
+		    Return Response
+		    
+		  End If
+		  
+		  
+		End Function
+	#tag EndMethod
+
+	#tag Method, Flags = &h0
 		Function SQLSELECTProcess() As Dictionary
 		  Dim Response As New Dictionary
 		  
@@ -458,6 +595,7 @@ Protected Class Luna
 		  #elseif UseSQLite
 		    bError=db.Error
 		  #endif
+		  
 		  If bError Then
 		    
 		    Response.Value("ResponseStatus") = 500
@@ -539,6 +677,36 @@ Protected Class Luna
 		  // Return the dictionary
 		  Return StringsDict
 		End Function
+	#tag EndMethod
+
+	#tag Method, Flags = &h0
+		Sub SwaggerPageCreate(Request As WebRequest)
+		  Dim strSwagger As String
+		  Dim swFile As FolderItem
+		  swFile = GetFolderItem("")
+		  swFile = swFile.Child("db")
+		  swFile = swFile.Child( "swagger.json") 
+		  If swFile <> Nil Then
+		    If swFile.Exists Then
+		      // Be aware that TextInputStream.Open coud raise an exception
+		      Dim t As TextInputStream
+		      Try
+		        t = TextInputStream.Open(swFile)
+		        t.Encoding = Encodings.UTF8
+		        strSwagger = t.ReadAll
+		      Catch e As IOException
+		        t.Close
+		        strSwagger=""
+		      End Try
+		    End If
+		  End If
+		  
+		  Request.Status = 200
+		  Request.Print (strSwagger)
+		  
+		  Return
+		  
+		End Sub
 	#tag EndMethod
 
 	#tag Method, Flags = &h0
@@ -690,11 +858,11 @@ Protected Class Luna
 	#tag EndProperty
 
 	#tag Property, Flags = &h0
-		AccessControlAllowHeaders As String = "Content-Type, Authorization"
+		AccessControlAllowHeaders As String = "Origin, X-Requested-With, Content-Type, Accept, Authorization, ResetAuthorization"
 	#tag EndProperty
 
 	#tag Property, Flags = &h0
-		AccessControlAllowMethods As String = "GET, POST, PUT, PATCH, DELETE"
+		AccessControlAllowMethods As String = "GET, POST, PUT, PATCH, DELETE, OPTIONS"
 	#tag EndProperty
 
 	#tag Property, Flags = &h0
@@ -738,6 +906,10 @@ Protected Class Luna
 
 	#tag Property, Flags = &h0
 		SQLiteStatement As SQLitePreparedStatement
+	#tag EndProperty
+
+	#tag Property, Flags = &h0
+		SQLResetScript As String
 	#tag EndProperty
 
 	#tag Property, Flags = &h0
@@ -800,6 +972,12 @@ Protected Class Luna
 			Visible=true
 			Group="ID"
 			Type="String"
+		#tag EndViewProperty
+		#tag ViewProperty
+			Name="SQLResetScript"
+			Group="Behavior"
+			Type="String"
+			EditorType="MultiLineEditor"
 		#tag EndViewProperty
 		#tag ViewProperty
 			Name="Super"

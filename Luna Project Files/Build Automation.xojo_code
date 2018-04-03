@@ -7,6 +7,10 @@
 					Destination = 0
 					Subdirectory = db
 					FolderItem = Li4vLi4vZXh0ZXJuYWxzL2RiL3Rlc3RkYi5zcWxpdGU=
+					FolderItem = Li4vLi4vZXh0ZXJuYWxzL2RiL1Jlc2V0X0NvbnRhY3RzX1RhYmxlX0NyZWF0ZV9BbmRfTG9hZC5zcWw=
+					FolderItem = Li4vLi4vZXh0ZXJuYWxzL2RiL1Jlc2V0X0NvbnRhY3RzX1RhYmxlX0NyZWF0ZV9BbmRfTG9hZF9Qb3N0Z3Jlc3FsLnNxbA==
+					FolderItem = Li4vLi4vZXh0ZXJuYWxzL2RiL1Jlc2V0X0NvbnRhY3RzX1RhYmxlX0NyZWF0ZV9BbmRfTG9hZF9TUUxpdGUuc3Fs
+					FolderItem = Li4vLi4vZXh0ZXJuYWxzL2RiL3N3YWdnZXIuanNvbg==
 				End
 			End
 			Begin BuildStepList Mac OS X
