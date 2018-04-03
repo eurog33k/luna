@@ -142,7 +142,7 @@ Inherits WebApplication
 		  
 		  
 		  // In this case, we have a single, hard-coded key that needs to be passed.
-		  Dim ResetKey As String = "@3pEg%8SqU@j%M*FdiPrJx*9s%J&ioBGD#^GxseIjRu0&Q9ozD"
+		  Dim ResetKey As String = "MySuperSecretResetPassword"
 		  
 		  If ResetAuthorizationHeader = ResetKey Then
 		    Return True

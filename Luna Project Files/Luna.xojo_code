@@ -171,7 +171,7 @@ Protected Class Luna
 		  + "<body style=""background-color: #eeeeee;"">" _
 		  + "<div style=""margin: 0 auto; margin-top: 24px; background-color: #ffffff; padding: 24px; width: 400px; border: 1px #ccc solid; border-radius: 12px; box-shadow: 10px 10px 5px #cccccc; "">" _
 		  + "<p style=""text-align: center;"">" _
-		  + "<img src=""http://45.32.235.158/Luna/images/luna_logo_03.jpg"" style=""max-width: 300px; margin-bottom: 24px;""><br />" _
+		  + "<img src=""https://www.lunaapi.ga/Luna/images/luna_logo_03.jpg"" style=""max-width: 300px; margin-bottom: 24px;""><br />" _
 		  + "<!--<span style=""font-weight: bold; font-size: 120px; color: #32cd32; font-family: Helvetica;"">Luna</span><br />-->" _
 		  + "<span style=""font-weight: normal; font-size: 14px; color: #8F8F8F margin-top: 0px; font-family: Helvetica;"">A RESTful API Server Framework for Xojo</span></p>" _
 		  + "<p style=""text-align: center; font-family: Helvetica; font-size: 12px; color: #cccccc;"">Version " + LunaVersion + "</p>" _
