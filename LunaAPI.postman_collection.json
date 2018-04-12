@@ -210,6 +210,39 @@
 						}
 					},
 					"response": []
+				},
+				{
+					"name": "Contacts - RESET Online",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer taWFk8Z4gR8oGoYtG+7Kycm97UswXW8i87T]HnjcNCGQJgi8JD"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"url": {
+							"raw": "http://127.0.0.1:8080/v1/Contacts/timdietrich@me.com",
+							"protocol": "http",
+							"host": [
+								"127",
+								"0",
+								"0",
+								"1"
+							],
+							"port": "8080",
+							"path": [
+								"v1",
+								"Contacts",
+								"timdietrich@me.com"
+							]
+						}
+					},
+					"response": []
 				}
 			]
 		},
