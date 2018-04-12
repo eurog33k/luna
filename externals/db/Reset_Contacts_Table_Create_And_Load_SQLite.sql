@@ -1,21 +1,4 @@
-DROP TABLE 'Contacts';
-
--- CREATE TABLE "Contacts" ---------------------------------
-CREATE TABLE `Contacts` ( 
-	`Title` VarChar( 100 ) NULL,
-	`GivenName` VarChar( 50 ) NULL,
-	`Surname` VarChar( 50 ) NULL,
-	`StreetAddress` VarChar( 100 ) NULL,
-	`City` VarChar( 75 ) NULL,
-	`State` VarChar( 2 ) NULL,
-	`ZipCode` VarChar( 10 ) NULL,
-	`EmailAddress` VarChar( 200 ) NOT NULL,
-	`TelephoneNumber` VarChar( 12 ) NULL,
-	`Occupation` VarChar( 100 ) NULL,
-	`Company` VarChar( 150 ) NULL,
-	`Domain` VarChar( 200 ) NULL,
-	PRIMARY KEY ( `EmailAddress` ) );
-
+DELETE FROM 'Contacts';
 
 -- Dump data of "Contacts" ---------------------------------
 INSERT INTO `Contacts`(`Title`,`GivenName`,`Surname`,`StreetAddress`,`City`,`State`,`ZipCode`,`EmailAddress`,`TelephoneNumber`,`Occupation`,`Company`,`Domain`) VALUES ( 'Mr.', 'George', 'Lopez', '657 Brannon Avenue', 'Jacksonville', 'FL', '32205', 'GeorgeELopez@fleckens.hu', '904-781-8829', 'Substance abuse and behavioral disorder counselor', 'Egghead Software', 'amphidea.com' );
