@@ -485,11 +485,11 @@ Protected Class Luna
 		  
 		  // Build the SELECT statement.
 		  #if UseMySQL
-		    sql = "SELECT Count(*) FROM " + Table + ";"
+		    sql = "SELECT Count(*) AS recordcount FROM " + Table + ";"
 		  #elseif UsePostgreSQL
-		    sql = "SELECT Count(*) FROM " + Table + ";"
+		    sql = "SELECT Count(*) AS recordcount FROM " + Table + ";"
 		  #elseif UseSQLite
-		    sql = "SELECT Count(*) FROM " + Table + ";"
+		    sql = "SELECT Count(*) AS recordcount FROM " + Table + ";"
 		  #endif
 		  
 		  // Create the prepared statement.
