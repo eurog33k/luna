@@ -1,14 +1,49 @@
 {
 	"info": {
-		"_postman_id": "1412d267-f426-4dfe-905d-f36323708d7a",
+		"_postman_id": "dab89957-e2e3-4a56-a901-4b23e2d7dc13",
 		"name": "LunaAPI",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
 	},
 	"item": [
 		{
 			"name": "Online",
-			"description": "",
+			"description": null,
 			"item": [
+				{
+					"name": "Contacts - RESET Online",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer taWFk8Z4gR8oGoYtG+7Kycm97UswXW8i87T]HnjcNCGQJgi8JD"
+							},
+							{
+								"key": "ResetAuthorization",
+								"value": "Bearer MySuperSecretResetPassword"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"url": {
+							"raw": "https://www.lunaapi.ga/api/v1/Reset",
+							"protocol": "https",
+							"host": [
+								"www",
+								"lunaapi",
+								"ga"
+							],
+							"path": [
+								"api",
+								"v1",
+								"Reset"
+							]
+						}
+					},
+					"response": []
+				},
 				{
 					"name": "Contacts - GET ALL Online",
 					"request": {
@@ -24,17 +59,24 @@
 							"raw": ""
 						},
 						"url": {
-							"raw": "http://167.99.47.138/v1/Contacts",
-							"protocol": "http",
+							"raw": "https://www.lunaapi.ga/api/v1/Contacts?",
+							"protocol": "https",
 							"host": [
-								"167",
-								"99",
-								"47",
-								"138"
+								"www",
+								"lunaapi",
+								"ga"
 							],
 							"path": [
+								"api",
 								"v1",
 								"Contacts"
+							],
+							"query": [
+								{
+									"key": "columns",
+									"value": "GivenName,Surname",
+									"disabled": true
+								}
 							]
 						}
 					},
@@ -55,18 +97,25 @@
 							"raw": ""
 						},
 						"url": {
-							"raw": "http://167.99.47.138/v1/Contacts/ShirleySBruce@einrot.com",
+							"raw": "http://www.lunaapi.ga/api/v1/Contacts/ShirleySBruce@einrot.com?",
 							"protocol": "http",
 							"host": [
-								"167",
-								"99",
-								"47",
-								"138"
+								"www",
+								"lunaapi",
+								"ga"
 							],
 							"path": [
+								"api",
 								"v1",
 								"Contacts",
 								"ShirleySBruce@einrot.com"
+							],
+							"query": [
+								{
+									"key": "columns",
+									"value": "GivenName,Surname",
+									"disabled": true
+								}
 							]
 						}
 					},
@@ -91,15 +140,15 @@
 							"raw": "{\"Title\":\"Mr.\",\"GivenName\":\"Timothy\",\"Surname\":\"Dietrich\",\"StreetAddress\":\"500 Xojo Way\",\"City\":\"Sedona\",\"State\":\"AZ\",\"ZipCode\":\"86336\",\"EmailAddress\":\"timdietrich@me.com\",\"TelephoneNumber\":\"800-555-4TIM\",\"Occupation\":\"Apple TV App Developer\",\"Company\":\"Dietrich Enterprises, LLC\",\"Domain\":\"timdietrich.me\"}"
 						},
 						"url": {
-							"raw": "http://167.99.47.138/v1/Contacts",
-							"protocol": "http",
+							"raw": "https://www.lunaapi.ga/api/v1/Contacts",
+							"protocol": "https",
 							"host": [
-								"167",
-								"99",
-								"47",
-								"138"
+								"www",
+								"lunaapi",
+								"ga"
 							],
 							"path": [
+								"api",
 								"v1",
 								"Contacts"
 							]
@@ -126,15 +175,15 @@
 							"raw": "{\"Title\":\"Mr.\",\"GivenName\":\"Tim\",\"Surname\":\"Dietrich\",\"StreetAddress\":\"500 Xojo Way\",\"City\":\"Sedona\",\"State\":\"AZ\",\"ZipCode\":\"86336\",\"EmailAddress\":\"timdietrich@me.com\",\"TelephoneNumber\":\"800-555-4TIM\",\"Occupation\":\"Apple TV App Developer\",\"Company\":\"Dietrich Enterprises, LLC\",\"Domain\":\"timdietrich.me\"}"
 						},
 						"url": {
-							"raw": "http://167.99.47.138/v1/Contacts/timdietrich@me.com",
-							"protocol": "http",
+							"raw": "https://www.lunaapi.ga/api/v1/Contacts/timdietrich@me.com",
+							"protocol": "https",
 							"host": [
-								"167",
-								"99",
-								"47",
-								"138"
+								"www",
+								"lunaapi",
+								"ga"
 							],
 							"path": [
+								"api",
 								"v1",
 								"Contacts",
 								"timdietrich@me.com"
@@ -162,15 +211,15 @@
 							"raw": "{\"StreetAddress\":\"629 Luna Drive\",\"City\":\"Richmond\",\"State\":\"VA\",\"ZipCode\":\"23235\"}"
 						},
 						"url": {
-							"raw": "http://167.99.47.138/v1/Contacts/timdietrich@me.com",
-							"protocol": "http",
+							"raw": "https://www.lunaapi.ga/api/v1/Contacts/timdietrich@me.com",
+							"protocol": "https",
 							"host": [
-								"167",
-								"99",
-								"47",
-								"138"
+								"www",
+								"lunaapi",
+								"ga"
 							],
 							"path": [
+								"api",
 								"v1",
 								"Contacts",
 								"timdietrich@me.com"
@@ -194,48 +243,15 @@
 							"raw": ""
 						},
 						"url": {
-							"raw": "http://167.99.47.138/v1/Contacts/timdietrich@me.com",
-							"protocol": "http",
+							"raw": "https://www.lunaapi.ga/api/v1/Contacts/timdietrich@me.com",
+							"protocol": "https",
 							"host": [
-								"167",
-								"99",
-								"47",
-								"138"
+								"www",
+								"lunaapi",
+								"ga"
 							],
 							"path": [
-								"v1",
-								"Contacts",
-								"timdietrich@me.com"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Contacts - RESET Online",
-					"request": {
-						"method": "DELETE",
-						"header": [
-							{
-								"key": "Authorization",
-								"value": "Bearer taWFk8Z4gR8oGoYtG+7Kycm97UswXW8i87T]HnjcNCGQJgi8JD"
-							}
-						],
-						"body": {
-							"mode": "raw",
-							"raw": ""
-						},
-						"url": {
-							"raw": "http://127.0.0.1:8080/v1/Contacts/timdietrich@me.com",
-							"protocol": "http",
-							"host": [
-								"127",
-								"0",
-								"0",
-								"1"
-							],
-							"port": "8080",
-							"path": [
+								"api",
 								"v1",
 								"Contacts",
 								"timdietrich@me.com"
@@ -248,8 +264,44 @@
 		},
 		{
 			"name": "Local",
-			"description": "",
+			"description": null,
 			"item": [
+				{
+					"name": "Contacts - RESET LOCAL",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer taWFk8Z4gR8oGoYtG+7Kycm97UswXW8i87T]HnjcNCGQJgi8JD"
+							},
+							{
+								"key": "ResetAuthorization",
+								"value": "Bearer MySuperSecretResetPassword"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"url": {
+							"raw": "http://127.0.0.1:8080/v1/Reset",
+							"protocol": "http",
+							"host": [
+								"127",
+								"0",
+								"0",
+								"1"
+							],
+							"port": "8080",
+							"path": [
+								"v1",
+								"Reset"
+							]
+						}
+					},
+					"response": []
+				},
 				{
 					"name": "Contacts - GET ALL Local",
 					"request": {
@@ -265,7 +317,7 @@
 							"raw": ""
 						},
 						"url": {
-							"raw": "http://127.0.0.1:8080/v1/Contacts",
+							"raw": "http://127.0.0.1:8080/v1/Contacts?",
 							"protocol": "http",
 							"host": [
 								"127",
@@ -277,6 +329,13 @@
 							"path": [
 								"v1",
 								"Contacts"
+							],
+							"query": [
+								{
+									"key": "columns",
+									"value": "GivenName,Surname",
+									"disabled": true
+								}
 							]
 						}
 					},
@@ -297,7 +356,7 @@
 							"raw": ""
 						},
 						"url": {
-							"raw": "http://127.0.0.1:8080/v1/Contacts/ShirleySBruce@einrot.com",
+							"raw": "http://127.0.0.1:8080/v1/Contacts/ShirleySBruce@einrot.com?",
 							"protocol": "http",
 							"host": [
 								"127",
@@ -310,6 +369,13 @@
 								"v1",
 								"Contacts",
 								"ShirleySBruce@einrot.com"
+							],
+							"query": [
+								{
+									"key": "columns",
+									"value": "GivenName,Surname",
+									"disabled": true
+								}
 							]
 						}
 					},
@@ -427,39 +493,6 @@
 				},
 				{
 					"name": "Contacts - DELETE Local",
-					"request": {
-						"method": "DELETE",
-						"header": [
-							{
-								"key": "Authorization",
-								"value": "Bearer taWFk8Z4gR8oGoYtG+7Kycm97UswXW8i87T]HnjcNCGQJgi8JD"
-							}
-						],
-						"body": {
-							"mode": "raw",
-							"raw": ""
-						},
-						"url": {
-							"raw": "http://127.0.0.1:8080/v1/Contacts/timdietrich@me.com",
-							"protocol": "http",
-							"host": [
-								"127",
-								"0",
-								"0",
-								"1"
-							],
-							"port": "8080",
-							"path": [
-								"v1",
-								"Contacts",
-								"timdietrich@me.com"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Contacts - RESET LOCAL",
 					"request": {
 						"method": "DELETE",
 						"header": [
