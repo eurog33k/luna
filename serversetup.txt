@@ -1,0 +1,405 @@
+Server setup on Digital Ocean:
+------------------------------
+
+1. Sign up:
+-----------
+
+Sign up at https://m.do.co/c/46e0e9e2c66c 
+(if you use my referral link, I get some credit, thanks)
+
+2. Create the server:
+---------------------
+
+Create a new droplet with ubuntu 16.04.4 x64 (1GB) with SSH key (current cost 5$/month)
+
+3. Log in:
+----------
+
+ssh  user@server (or ssh -i ida_rsa.pem user@server if you want to select the key to use)
+
+4. Set the environment:
+-----------------------
+
+nano /etc/environment
+
+add the following content and save it.
+
+LC_ALL=en_US.UTF-8
+LANG=en_US.UTF-8
+LANGUAGE=en_US.UTF-8
+
+5. Setup the firewall:
+----------------------
+
+mkdir /etc/firewall
+
+5a. Make a firewall script
+--------------------------
+
+nano /etc/firewall/firewall.sh
+
+enter the following content and save it.
+
+#!/bin/sh
+## Kill old firewall rules
+iptables -F INPUT
+iptables -F OUTPUT
+iptables -F FORWARD
+iptables -F POSTROUTING -t nat
+iptables -F PREROUTING -t nat
+## Localloop traffic
+iptables -A INPUT -s 127.0.0.1/32 -j ACCEPT
+## Allow all outbound traffic
+iptables -A OUTPUT -j ACCEPT
+## Accept all established inbound connections
+iptables -A INPUT -m state --state ESTABLISHED,RELATED -j ACCEPT
+## Allow SSH
+iptables -A INPUT -p tcp --dport 22 -j ACCEPT
+## Allow HTTP and HTTPS
+iptables -A INPUT -p tcp --dport 443 -j ACCEPT
+iptables -A INPUT -p tcp --dport 80 -j ACCEPT
+## Allow DNS
+iptables -A INPUT -p tcp --dport 53 -j ACCEPT
+iptables -A INPUT -p udp --dport 53 -j ACCEPT
+## Allow DNS Responses From DNS Server
+iptables -A INPUT -p udp -s 8.8.8.8/32 --source-port 53 -j ACCEPT
+iptables -A INPUT -p udp -s 8.8.4.4/32 --source-port 53 -j ACCEPT
+## Allow Ping
+iptables -A INPUT -p icmp -m icmp --icmp-type 8 -j ACCEPT
+## Reject All other inbound - default deny unless explicitly allowed
+iptables -A INPUT -j REJECT
+iptables -A FORWARD -j REJECT
+
+5b. Make a nofirewall script
+----------------------------
+
+nano /etc/firewall/nofirewall.sh
+
+enter the following content and save it.
+
+#!/bin/sh
+## Kill old firewall rules
+iptables -F INPUT
+iptables -F OUTPUT
+iptables -F FORWARD
+iptables -F POSTROUTING -t nat
+iptables -F PREROUTING -t nat
+
+5c. add the firewall service to init.d
+--------------------------------------
+
+nano /etc/init.d/firewall
+
+enter the following content and save it.
+
+#!/bin/sh -e
+### BEGIN INIT INFO
+# Provides: firewall
+# Required-Start: $local_fs $remote_fs $network
+# Required-Stop: $local_fs $remote_fs $network
+# Should-Start: $syslog
+# Should-Stop: $syslog
+# Default-Start: 2 3 4 5
+# Default-Stop: 0 1 6
+# Short-Description: Firewall
+### END INIT INFO
+case "$1" in
+start)
+/etc/firewall/firewall.sh
+;;
+stop)
+/etc/firewall/nofirewall.sh
+;;
+restart)
+/etc/firewall/firewall.sh
+;;
+force-reload | reload)
+/etc/firewall/firewall.sh
+;;
+status)
+iptables -L
+;;
+*)
+echo "Usage: $0 {start|stop|restart|reload|force-reload|status|autovac-start|autovac-stop|autovac-restart}"
+exit 1
+;;
+esac
+exit 0
+
+5d. set the permissions for the firewall scripts
+------------------------------------------------
+
+chmod 755 /etc/init.d/firewall && chmod 755 /etc/firewall/*
+
+5e. add the firewall to startup and start it
+--------------------------------------------
+
+update-rc.d firewall defaults && service firewall start
+
+5f. check if the firewall is active
+-----------------------------------
+
+iptables -L
+
+6. Patch the server:
+--------------------
+
+apt-get update && apt-get upgrade
+
+7. Install Apache:
+------------------
+
+apt-get install apache2
+
+8. Make a default webpage:
+--------------------------
+
+rm /var/www/html/index.html && nano /var/www/html/index.html
+
+enter some content and save it.
+
+<html><head><TITLE>Hello world</TITLE> </head><body><H1>Hello
+world</H1></body></html>
+
+Test if this works by opening server in browser http://server
+
+9. Add a domain name:
+---------------------
+
+9a. Get a free domain name
+--------------------------
+
+If you want a free domain name, you can register a (free) domain name at 
+https://my.freenom.com/domains.php
+
+find a domain name then in checkout 
+•	select "Use DNS"
+•	fill in you ip number for the hostname and the www hostname
+•	select 12 months free
+•	agree to the terms
+•	complete order
+
+9b. Use your existing registrar
+-------------------------------
+
+If you used your own domain name provider, do what is needed there.
+
+9c. Test if your domain name works
+----------------------------------
+
+Test if the domain name works by going to the site in your browser 
+
+http://www.domainname 
+and 
+http://domainname
+
+10: Force Apache to use HTTPS:
+------------------------------
+
+10a. Get a free certificate
+---------------------------
+
+If you want a free certificate from https://letsencrypt.org/, 
+use the instructions at the Certbot site https://certbot.eff.org/
+
+At https://certbot.eff.org/
+•	Under software select Apache
+•	Under System select Ubuntu 16.04
+
+Follow the instructions
+(without sudo if logged in as root)
+sudo apt-get update
+sudo apt-get install software-properties-common
+sudo add-apt-repository ppa:certbot/certbot
+sudo apt-get update
+sudo apt-get install python-certbot-apache 
+
+sudo certbot --apache -d hostname -d www.hostname
+(hostname is the domain name you registered above) 
+
+•	enter email address
+•	agree to the terms of service by choosing A (agree)
+•	choose if you’re are willing to share your email address with the EFF
+•	fill in your domain name
+•	choose to redirect http to https by entering 2
+
+Try if the automatic renewal will work by doing a dry-run
+sudo certbot renew --dry-run
+
+10b. Use your existing certificate provider
+-------------------------------------------
+
+If you used your own certificate provider, do what is needed there.
+
+10c. Test if you certificate works
+----------------------------------
+
+Test if your certificate works by visiting the website in your browser 
+
+http://www.domainname 
+and 
+http://domainname
+
+11. Install Luna Webservice:
+----------------------------
+
+- Compile Luna
+
+- Rename the Luna Libs folder to Libs
+
+- Rename the Luna Resources folder to Resources
+
+- Zip the Luna folder (to Luna.zip)
+
+- Upload Luna.zip to /var/www
+
+- unzip the file
+	(if unzip is not installed  the install it with: sudo apt-get install unzip)
+	unzip Luna.zip -d ./
+
+- remove the zip file
+
+	rm Luna.zip
+
+- set the permissions for Luna
+
+	cd /var/www/Luna
+	chmod 755 Luna
+
+- make a script to stop the api
+
+	nano stopapi
+	
+	enter the following content and save it.
+	
+	killall Luna1 Luna2 Luna3 Luna4
+
+- set the script permissions
+
+	chmod 755 stopapi
+
+- copy Luna to separate executables (the amount of executables you want to load balance)
+
+	cp Luna Luna1
+	cp Luna Luna2
+	cp Luna Luna3
+	cp Luna Luna4
+
+12. Make a webservice for Luna:
+-------------------------------
+
+12a. create the webservice script
+---------------------------------
+
+nano /etc/init.d/webservice
+
+enter the following content and save it.
+
+#!/bin/sh -e
+### BEGIN INIT INFO
+# Provides: webservice
+# Required-Start: $local_fs $remote_fs $network $time $apache2
+# Required-Stop: $local_fs $remote_fs $network $time $apache2
+# Should-Start: $syslog
+# Should-Stop: $syslog
+# Default-Start: 2 3 4 5
+# Default-Stop: 0 1 6
+# Short-Description: Webservices
+### END INIT INFO
+case "$1" in
+start)
+/var/www/Luna/Luna1 --port=81
+/var/www/Luna/Luna2 --port=82
+/var/www/Luna/Luna3 --port=83
+/var/www/Luna/Luna4 --port=84
+;;
+stop)
+/var/www/Luna/stopapi
+;;
+restart)
+/var/www/Luna/stopapi
+sleep 3
+/var/www/Luna/Luna1 --port=81
+/var/www/Luna/Luna2 --port=82
+/var/www/Luna/Luna3 --port=83
+/var/www/Luna/Luna4 --port=84
+;;
+force-reload | reload)
+/var/www/Luna/stopapi
+sleep 3
+/var/www/Luna/Luna1 --port=81
+/var/www/Luna/Luna2 --port=82
+/var/www/Luna/Luna3 --port=83
+/var/www/Luna/Luna4 --port=84
+;;
+status)
+;;
+*)
+echo "Usage: $0 {start|stop|restart|reload|force-reload|status|autovac-start|autovac-stop|autovac-restart}"
+exit 1
+;;
+esac
+exit 0
+
+12b. set the webservice permissions
+-----------------------------------
+
+chmod 755 /etc/init.d/webservice
+
+12c. add the webservice to startup and start it
+-----------------------------------------------
+
+update-rc.d webservice defaults && service webservice start
+
+13. Set your apache proxy balancer:
+-----------------------------------
+
+Edit your ssl site configuration to reference your Luna executable ports
+
+nano /etc/apache2/sites-enabled/000-default-le-ssl.conf
+
+Add this block under DocumentRoot and save it
+
+ProxyRequests Off
+ProxyPreserveHost On
+SetEnv force_proxy_request-1.0 1
+SetEnv proxy-nokeepalive 1
+<Proxy balancer://luna_cluster>
+BalancerMember http://127.0.0.1:81
+BalancerMember http://127.0.0.1:82
+BalancerMember http://127.0.0.1:83
+BalancerMember http://127.0.0.1:84
+AllowOverride None
+Order allow,deny
+allow from all
+ProxySet lbmethod=byrequests
+</Proxy>
+ProxyPass /api balancer://luna_cluster/
+
+14. check your http to https rewrite rules:
+-------------------------------------------
+
+nano /etc/apache2/sites-enabled/000-default.conf
+
+If necessary edit the changes made my certbot to include www
+
+RewriteEngine on
+RewriteCond %{SERVER_NAME} =zedelgem.ga [OR]
+RewriteCond %{SERVER_NAME} =www.zedelgem.ga
+RewriteRule ^ https://%{SERVER_NAME}%{REQUEST_URI} [END,NE,R=permanent]
+
+15. Enable the necessary Apache mods:
+-------------------------------------
+
+a2enmod proxy_http proxy_balancer lbmethod_byrequests
+
+16. Restart Apache:
+-------------------
+
+service apache2 restart
+
+17. Test your API
+-----------------
+
+Use Postman or Paw to test if your api works as expected
+
