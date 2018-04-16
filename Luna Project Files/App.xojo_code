@@ -83,6 +83,18 @@ Inherits WebApplication
 		End Function
 	#tag EndEvent
 
+	#tag Event
+		Sub Open(args() as String)
+		  System.Log(System.LogLevelNotice, "Luna Started")
+		  #If Not DebugBuild Then
+		    If not Daemonize Then
+		      System.Log(system.LogLevelError, "Could not daemonize Luna")
+		    End If
+		  #endif
+		  
+		End Sub
+	#tag EndEvent
+
 
 	#tag Method, Flags = &h0
 		Function GetFieldName(strFieldname As String) As String
